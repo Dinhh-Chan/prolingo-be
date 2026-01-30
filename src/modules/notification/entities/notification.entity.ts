@@ -1,71 +1,44 @@
 import { StrObjectId } from "@common/constant";
+import { EntityDefinition } from "@common/constant/class/entity-definition";
 import { BaseEntity } from "@common/interface/base-entity.interface";
-import { Entity } from "@module/repository";
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { IsEnum, IsOptional, IsString } from "class-validator";
-import mongoose, { HydratedDocument } from "mongoose";
-import { NotificationReceiverType } from "../common/constant";
+import {
+    IsString,
+    IsNotEmpty,
+    IsOptional,
+    IsBoolean,
+    MaxLength,
+} from "class-validator";
 
-@Schema({
-    collection: Entity.NOTIFICATION,
-})
-export class Notification implements BaseEntity {
+export class NotificationUser implements BaseEntity {
     @StrObjectId()
     _id: string;
 
     @IsString()
-    @Prop({ required: true })
-    title: string;
+    @IsNotEmpty({ message: "User ID không được để trống" })
+    @EntityDefinition.field({ label: "User ID", required: true })
+    user_id: string;
 
     @IsString()
-    @Prop({ required: true })
-    senderName: string;
+    @MaxLength(50)
+    @IsOptional()
+    @EntityDefinition.field({ label: "Loại thông báo" })
+    type?: string;
 
     @IsString()
-    @Prop()
+    @MaxLength(200)
     @IsOptional()
-    sender?: string;
+    @EntityDefinition.field({ label: "Tiêu đề" })
+    title?: string;
 
     @IsString()
-    @Prop()
     @IsOptional()
-    description?: string;
+    @EntityDefinition.field({ label: "Nội dung" })
+    message?: string;
 
-    @IsString()
-    @Prop()
+    @IsBoolean()
     @IsOptional()
-    content?: string;
+    @EntityDefinition.field({ label: "Đã đọc" })
+    is_read?: boolean;
 
-    @IsString()
-    @Prop()
-    @IsOptional()
-    imageUrl?: string;
-
-    @IsOptional()
-    @Prop({ type: mongoose.Schema.Types.Mixed })
-    data?: any;
-
-    @IsEnum(NotificationReceiverType)
-    @Prop({
-        required: true,
-        type: String,
-        enum: Object.values(NotificationReceiverType),
-    })
-    receiverType: NotificationReceiverType;
-
-    @IsString({ each: true })
-    @IsOptional()
-    @Prop([{ type: String, ref: Entity.TOPIC }])
-    topics?: string[];
-
-    @IsString({ each: true })
-    @IsOptional()
-    @Prop([{ type: String, ref: Entity.USER }])
-    users?: string[];
-
-    @Prop({ default: () => new Date() })
     createdAt?: Date;
 }
-
-export type NotificationDocument = HydratedDocument<Notification>;
-export const NotificationSchema = SchemaFactory.createForClass(Notification);

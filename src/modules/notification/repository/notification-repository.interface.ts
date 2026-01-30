@@ -1,4 +1,5 @@
 import { BaseRepository } from "@module/repository/common/base-repository.interface";
-import { Notification } from "../entities/notification.entity";
+import { NotificationUser } from "../entities/notification.entity";
 
-export type NotificationRepository = BaseRepository<Notification>;
+export interface NotificationUserRepository
+    extends BaseRepository<NotificationUser> {}
