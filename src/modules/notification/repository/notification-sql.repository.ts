@@ -2,7 +2,7 @@ import { NotificationModel } from "@module/repository/sequelize/model/notificati
 import { SqlRepository } from "@module/repository/sequelize/sql.repository";
 import { InjectModel } from "@nestjs/sequelize";
 import { ModelCtor } from "sequelize-typescript";
-import { Notification } from "../entities/notification.entity";
+import { Notification } from "../entities/notification-old.entity";
 import { NotificationRepository } from "./notification-repository.interface";
 
 export class NotificationSqlRepository

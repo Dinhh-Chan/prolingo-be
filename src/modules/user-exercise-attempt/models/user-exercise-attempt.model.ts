@@ -7,7 +7,7 @@ import {
     ForeignKey,
 } from "sequelize-typescript";
 import { UserExerciseAttempt } from "../entities/user-exercise-attempt.entity";
-import { User } from "../../user/entities/user.entity";
+import { UserModel } from "@module/repository/sequelize/model/user.model";
 import { ExerciseModel } from "../../exercise/models/exercise.model";
 import { LessonModel } from "../../lesson/models/lesson.model";
 
@@ -30,7 +30,7 @@ export class UserExerciseAttemptModel
     })
     _id: string;
 
-    @ForeignKey(() => User)
+    @ForeignKey(() => UserModel)
     @Column({
         type: DataType.UUID,
         allowNull: false,

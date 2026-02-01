@@ -12,7 +12,6 @@ import { DataProcessModule } from "./modules/data-process/data-process.module";
 import { EventAccountModule } from "./modules/event-account/event-account.module";
 import { FileModule } from "./modules/file/file.module";
 import { ImportSessionModule } from "./modules/import-session/import-session.module";
-import { NotificationModule } from "./modules/notification/notification.module";
 import { OneSignalModule } from "./modules/one-signal/one-signal.module";
 import { QuyTacMaModule } from "./modules/quy-tac-ma/quy-tac-ma.module";
 import { SettingModule } from "./modules/setting/setting.module";
@@ -70,7 +69,7 @@ import { UserStreakModule } from "./modules/user-streak/user-streak.module";
         UserModule,
         EventAccountModule,
         OneSignalModule,
-        NotificationModule,
+        NotificationUserModule,
         TopicModule,
         FileModule,
         SettingModule,

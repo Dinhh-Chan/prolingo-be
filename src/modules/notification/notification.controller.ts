@@ -1,11 +1,11 @@
 import { ApiRecordResponse } from "@common/decorator/api.decorator";
 import { Authorization, ReqUser } from "@common/decorator/auth.decorator";
-import { CreateNotificationDto } from "@module/notification/dto/create-notification.dto";
+import { CreateNotificationDto } from "@module/notification/dto/create-notification-old.dto";
 import { NotificationService } from "@module/notification/notification.service";
 import { User } from "@module/user/entities/user.entity";
 import { Body, Controller, Post } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { Notification } from "./entities/notification.entity";
+import { Notification } from "./entities/notification-old.entity";
 
 @Controller("notification")
 @ApiTags("notification")

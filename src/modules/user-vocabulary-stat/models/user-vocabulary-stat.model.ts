@@ -8,7 +8,7 @@ import {
     Unique,
 } from "sequelize-typescript";
 import { UserVocabularyStat } from "../entities/user-vocabulary-stat.entity";
-import { User } from "../../user/entities/user.entity";
+import { UserModel } from "@module/repository/sequelize/model/user.model";
 import { IndustryModel } from "../../industry/models/industry.model";
 import { CertificationModel } from "../../certification/models/certification.model";
 
@@ -38,7 +38,7 @@ export class UserVocabularyStatModel
     _id: string;
 
     @Unique("user_industry_cert_unique")
-    @ForeignKey(() => User)
+    @ForeignKey(() => UserModel)
     @Column({
         type: DataType.UUID,
         allowNull: false,

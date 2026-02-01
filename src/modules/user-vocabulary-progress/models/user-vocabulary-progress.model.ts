@@ -8,7 +8,7 @@ import {
     Unique,
 } from "sequelize-typescript";
 import { UserVocabularyProgress } from "../entities/user-vocabulary-progress.entity";
-import { User } from "../../user/entities/user.entity";
+import { UserModel } from "@module/repository/sequelize/model/user.model";
 import { VocabularyModel } from "../../vocabulary/models/vocabulary.model";
 
 @Table({
@@ -37,7 +37,7 @@ export class UserVocabularyProgressModel
     _id: string;
 
     @Unique("user_vocab_unique")
-    @ForeignKey(() => User)
+    @ForeignKey(() => UserModel)
     @Column({
         type: DataType.UUID,
         allowNull: false,

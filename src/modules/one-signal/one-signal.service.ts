@@ -2,7 +2,7 @@ import { QueueName } from "@common/constant";
 import { AccessSsoJwtPayload } from "@module/auth/auth.interface";
 import { AuthRepository } from "@module/auth/repository/auth-repository.interface";
 import { NotificationReceiverType } from "@module/notification/common/constant";
-import { Notification } from "@module/notification/entities/notification.entity";
+import { Notification } from "@module/notification/entities/notification-old.entity";
 import { UpdateOneSignalUserDto } from "@module/one-signal/dto/update-onesignal-user.dto";
 import { OneSignalUserRepository } from "@module/one-signal/repository/one-signal-user-repository.interface";
 import { Entity } from "@module/repository";

@@ -8,7 +8,7 @@ import {
     PrimaryKey,
 } from "sequelize-typescript";
 import { UserNotificationSetting } from "../entities/user-notification-setting.entity";
-import { User } from "../../user/entities/user.entity";
+import { UserModel } from "@module/repository/sequelize/model/user.model";
 
 @Table({
     tableName: "user_notification_settings",
@@ -22,7 +22,7 @@ export class UserNotificationSettingModel
 {
     @StrObjectId()
     @PrimaryKey
-    @ForeignKey(() => User)
+    @ForeignKey(() => UserModel)
     @Column({
         type: DataType.UUID,
         primaryKey: true,

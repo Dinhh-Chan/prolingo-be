@@ -7,7 +7,7 @@ import {
     ForeignKey,
 } from "sequelize-typescript";
 import { UserWritingSubmission } from "../entities/user-writing-submission.entity";
-import { User } from "../../user/entities/user.entity";
+import { UserModel } from "@module/repository/sequelize/model/user.model";
 import { WritingExerciseModel } from "../../writing-exercise/models/writing-exercise.model";
 
 @Table({
@@ -29,7 +29,7 @@ export class UserWritingSubmissionModel
     })
     _id: string;
 
-    @ForeignKey(() => User)
+    @ForeignKey(() => UserModel)
     @Column({
         type: DataType.UUID,
         allowNull: false,

@@ -1,6 +1,6 @@
 import { StrObjectId } from "@common/constant";
 import { NotificationReceiverType } from "@module/notification/common/constant";
-import { Notification } from "@module/notification/entities/notification.entity";
+import { Notification } from "@module/notification/entities/notification-old.entity";
 import { Entity } from "@module/repository";
 import { Column, DataType, Model, Table } from "sequelize-typescript";
 

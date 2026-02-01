@@ -8,7 +8,7 @@ import {
     Unique,
 } from "sequelize-typescript";
 import { UserDailyActivity } from "../entities/user-daily-activity.entity";
-import { User } from "../../user/entities/user.entity";
+import { UserModel } from "@module/repository/sequelize/model/user.model";
 
 @Table({
     tableName: "user_daily_activities",
@@ -31,7 +31,7 @@ export class UserDailyActivityModel extends Model implements UserDailyActivity {
     _id: string;
 
     @Unique("user_date_unique")
-    @ForeignKey(() => User)
+    @ForeignKey(() => UserModel)
     @Column({
         type: DataType.UUID,
         allowNull: false,

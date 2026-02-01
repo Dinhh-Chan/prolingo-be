@@ -8,7 +8,7 @@ import {
     PrimaryKey,
 } from "sequelize-typescript";
 import { UserStreak } from "../entities/user-streak.entity";
-import { User } from "../../user/entities/user.entity";
+import { UserModel } from "@module/repository/sequelize/model/user.model";
 
 @Table({
     tableName: "user_streaks",
@@ -17,7 +17,7 @@ import { User } from "../../user/entities/user.entity";
 export class UserStreakModel extends Model implements UserStreak {
     @StrObjectId()
     @PrimaryKey
-    @ForeignKey(() => User)
+    @ForeignKey(() => UserModel)
     @Column({
         type: DataType.UUID,
         primaryKey: true,
@@ -51,8 +51,4 @@ export class UserStreakModel extends Model implements UserStreak {
         field: "last_activity_date",
     })
     last_activity_date?: string;
-
-    get user_id(): string {
-        return this._id;
-    }
 }

@@ -7,7 +7,7 @@ import {
     ForeignKey,
 } from "sequelize-typescript";
 import { UserVocabularySet } from "../entities/user-vocabulary-set.entity";
-import { User } from "../../user/entities/user.entity";
+import { UserModel } from "@module/repository/sequelize/model/user.model";
 
 @Table({
     tableName: "user_vocabulary_sets",
@@ -25,7 +25,7 @@ export class UserVocabularySetModel extends Model implements UserVocabularySet {
     })
     _id: string;
 
-    @ForeignKey(() => User)
+    @ForeignKey(() => UserModel)
     @Column({
         type: DataType.UUID,
         allowNull: false,

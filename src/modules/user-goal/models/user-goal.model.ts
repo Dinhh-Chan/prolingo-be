@@ -7,7 +7,7 @@ import {
     ForeignKey,
 } from "sequelize-typescript";
 import { UserGoal } from "../entities/user-goal.entity";
-import { User } from "../../user/entities/user.entity";
+import { UserModel } from "@module/repository/sequelize/model/user.model";
 import { CertificationModel } from "../../certification/models/certification.model";
 
 @Table({
@@ -24,7 +24,7 @@ export class UserGoalModel extends Model implements UserGoal {
     })
     _id: string;
 
-    @ForeignKey(() => User)
+    @ForeignKey(() => UserModel)
     @Column({
         type: DataType.UUID,
         allowNull: false,

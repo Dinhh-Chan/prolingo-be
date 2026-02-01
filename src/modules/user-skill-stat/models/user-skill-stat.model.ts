@@ -8,7 +8,7 @@ import {
     Unique,
 } from "sequelize-typescript";
 import { UserSkillStat } from "../entities/user-skill-stat.entity";
-import { User } from "../../user/entities/user.entity";
+import { UserModel } from "@module/repository/sequelize/model/user.model";
 
 @Table({
     tableName: "user_skill_stats",
@@ -33,7 +33,7 @@ export class UserSkillStatModel extends Model implements UserSkillStat {
     _id: string;
 
     @Unique("user_skill_unique")
-    @ForeignKey(() => User)
+    @ForeignKey(() => UserModel)
     @Column({
         type: DataType.UUID,
         allowNull: false,

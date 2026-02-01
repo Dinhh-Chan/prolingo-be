@@ -4,7 +4,7 @@ import { DataPartitionSchema } from "@module/data-partition/entities/data-partit
 import { FileSchema } from "@module/file/entities/file.entity";
 import { ImportSessionSchema } from "@module/import-session/entities/import-session.entity";
 import { IncrementSchema } from "@module/increment/entities/increment.entity";
-import { NotificationSchema } from "@module/notification/entities/notification.entity";
+import { NotificationSchema } from "@module/notification/entities/notification-old.entity";
 import { OneSignalUserSchema } from "@module/one-signal/entities/one-signal-user.entity";
 import { HamSinhMaSchema } from "@module/quy-tac-ma/entities/ham-sinh-ma.entity";
 import { QuyTacMaSchema } from "@module/quy-tac-ma/entities/quy-tac-ma.entity";

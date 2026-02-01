@@ -7,7 +7,7 @@ import {
     ForeignKey,
 } from "sequelize-typescript";
 import { UserProfile } from "../entities/user-profile.entity";
-import { User } from "../../user/entities/user.entity";
+import { UserModel } from "@module/repository/sequelize/model/user.model";
 import { IndustryModel } from "../../industry/models/industry.model";
 import { JobRoleModel } from "../../job-role/models/job-role.model";
 
@@ -27,7 +27,7 @@ export class UserProfileModel extends Model implements UserProfile {
     })
     _id: string;
 
-    @ForeignKey(() => User)
+    @ForeignKey(() => UserModel)
     @Column({
         type: DataType.UUID,
         allowNull: false,

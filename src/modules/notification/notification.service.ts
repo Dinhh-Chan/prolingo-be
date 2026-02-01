@@ -5,7 +5,7 @@ import { CreateDocument } from "@module/repository/common/base-repository.interf
 import { InjectRepository } from "@module/repository/common/repository";
 import { User } from "@module/user/entities/user.entity";
 import { Injectable } from "@nestjs/common";
-import { Notification } from "./entities/notification.entity";
+import { Notification } from "./entities/notification-old.entity";
 
 @Injectable()
 export class NotificationService {
