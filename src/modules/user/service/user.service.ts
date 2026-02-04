@@ -9,14 +9,15 @@ import { InjectRepository } from "@module/repository/common/repository";
 import { InjectTransaction } from "@module/repository/common/transaction";
 import { SettingKey } from "@module/setting/common/constant";
 import { SettingService } from "@module/setting/setting.service";
-import { CreateUserDto } from "@module/user/dto/create-user.dto";
-import { UserRepository } from "@module/user/repository/user-repository.interface";
+import { CreateUserDto } from "../dto/create-user.dto";
+import { UserRepository } from "../repository/user-repository.interface";
 import { Injectable, Logger, OnApplicationBootstrap } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import bcrypt from "bcryptjs";
 import { SystemRole } from "../common/constant";
 import { ChangePasswordDto } from "../dto/change-password.dto";
 import { User } from "../entities/user.entity";
+import { SqlTransaction } from "@module/repository/sequelize/sql.transaction";
 
 @Injectable()
 export class UserService
@@ -35,20 +36,6 @@ export class UserService
             notFoundCode: "error-user-not-found",
             transaction: userTransaction,
         });
-    }
-
-    async testUser() {
-        await this.userRepository.distinct("", { asd: 1 });
-        const user = await this.userRepository.updateOne(
-            {
-                username: "admin",
-            },
-            {
-                $inc: { __v: -1 },
-                fullname: 1,
-            },
-        );
-        return user;
     }
 
     async onApplicationBootstrap() {
@@ -87,7 +74,6 @@ export class UserService
     }
 
     async create(user: User, dto: CreateUserDto): Promise<User> {
-        // dto.password = await createUserPassword(dto.password);
         const t = await this.userTransaction.startTransaction();
         try {
             const res = await this.userRepository.create(dto, {
@@ -111,7 +97,7 @@ export class UserService
         }
         user.password = await createUserPassword(dto.newPass);
         const res = await this.userRepository.updateById(user._id, {
-            password: dto.oldPass,
+            password: user.password,
         });
         return res;
     }

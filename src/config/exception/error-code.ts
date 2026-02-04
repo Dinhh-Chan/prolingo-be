@@ -79,4 +79,5 @@ export type ErrorCode =
     | "error-user-skill-stat-not-found"
     | "error-user-daily-activity-not-found"
     | "error-user-streak-not-found"
+    | "error-user-email-exist"
     | FileErrorCode;

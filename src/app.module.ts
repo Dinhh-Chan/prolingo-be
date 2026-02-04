@@ -61,6 +61,7 @@ import { UserVocabularyStatModule } from "./modules/user-vocabulary-stat/user-vo
 import { UserSkillStatModule } from "./modules/user-skill-stat/user-skill-stat.module";
 import { UserDailyActivityModule } from "./modules/user-daily-activity/user-daily-activity.module";
 import { UserStreakModule } from "./modules/user-streak/user-streak.module";
+import { UsersModule } from "./modules/users/users.module";
 
 @Module({
     imports: [
@@ -126,6 +127,7 @@ import { UserStreakModule } from "./modules/user-streak/user-streak.module";
         UserSkillStatModule,
         UserDailyActivityModule,
         UserStreakModule,
+        UsersModule,
     ],
     providers: [...DefaultProviders],
     controllers: [AppController],

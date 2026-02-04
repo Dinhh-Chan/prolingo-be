@@ -1,5 +1,6 @@
 export const AUTH = "Auth";
 export const USER = "User";
+export const USERS = "Users";
 export const EVENT = "Event";
 export const EVENT_LOG = "EventLog";
 export const EVENT_ACCOUNT = "EventAccount";
