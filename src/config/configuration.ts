@@ -97,6 +97,21 @@ export interface Configuration {
         firstNameField: string;
         lastNameField: string;
     };
+    facebook: {
+        appId: string;
+        appSecret: string;
+    };
+    google: {
+        clientId: string;
+        clientSecret: string;
+    };
+    smtp: {
+        host: string;
+        port: number;
+        user?: string;
+        pass?: string;
+        from?: string;
+    };
     sentry: {
         dsn: string;
     };
@@ -222,6 +237,24 @@ export default (): Configuration => {
         firstNameField: getEnv("SSO_EMAIL_FIELD", "given_name"),
         lastNameField: getEnv("SSO_EMAIL_FIELD", "family_name"),
     };
+
+    const facebook: Configuration["facebook"] = {
+        appId: getEnv("FACEBOOK_APP_ID"),
+        appSecret: getEnv("FACEBOOK_APP_SECRET"),
+    };
+
+    const google: Configuration["google"] = {
+        clientId: getEnv("GOOGLE_CLIENT_ID"),
+        clientSecret: getEnv("GOOGLE_CLIENT_SECRET"),
+    };
+
+    const smtp: Configuration["smtp"] = {
+        host: getEnv("SMTP_HOST", "smtp.gmail.com"),
+        port: Number(getEnv("SMTP_PORT", "587")),
+        user: getEnv("GMAIL_SMTP"),
+        pass: getEnv("PASS_WORD_SMTP"),
+        from: getEnv("SMTP_FROM", getEnv("GMAIL_SMTP")),
+    };
     const sentry: Configuration["sentry"] = {
         dsn: getEnv("SENTRY_DSN"),
     };
@@ -249,6 +282,9 @@ export default (): Configuration => {
         redis,
         oneSignal,
         sso,
+        facebook,
+        google,
+        smtp,
         sentry,
         minio,
     };

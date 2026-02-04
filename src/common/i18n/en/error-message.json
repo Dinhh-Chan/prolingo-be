@@ -54,5 +54,12 @@
     "error-user-vocabulary-stat-not-found": "User vocabulary stat not found",
     "error-user-skill-stat-not-found": "User skill stat not found",
     "error-user-daily-activity-not-found": "User daily activity not found",
-    "error-user-streak-not-found": "User streak not found"
+    "error-user-streak-not-found": "User streak not found",
+    "error-facebook-not-configured": "Facebook login is not configured",
+    "error-facebook-token-invalid": "Facebook token is invalid or expired",
+    "error-google-not-configured": "Google login is not configured",
+    "error-google-token-invalid": "Google token is invalid or expired",
+    "error-otp-invalid": "OTP is incorrect or expired",
+    "error-otp-rate-limit": "Please wait before requesting a new OTP",
+    "error-smtp-not-configured": "Email service is not configured"
 }

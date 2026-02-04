@@ -61,5 +61,12 @@
     "error-user-vocabulary-stat-not-found": "Không tìm thấy thống kê từ vựng người dùng",
     "error-user-skill-stat-not-found": "Không tìm thấy thống kê kỹ năng người dùng",
     "error-user-daily-activity-not-found": "Không tìm thấy hoạt động hàng ngày của người dùng",
-    "error-user-streak-not-found": "Không tìm thấy chuỗi ngày học của người dùng"
+    "error-user-streak-not-found": "Không tìm thấy chuỗi ngày học của người dùng",
+    "error-facebook-not-configured": "Facebook login chưa được cấu hình",
+    "error-facebook-token-invalid": "Token Facebook không hợp lệ hoặc đã hết hạn",
+    "error-google-not-configured": "Google login chưa được cấu hình",
+    "error-google-token-invalid": "Token Google không hợp lệ hoặc đã hết hạn",
+    "error-otp-invalid": "Mã OTP không đúng hoặc đã hết hạn",
+    "error-otp-rate-limit": "Vui lòng đợi trước khi gửi lại mã OTP",
+    "error-smtp-not-configured": "Chức năng gửi email chưa được cấu hình"
 }

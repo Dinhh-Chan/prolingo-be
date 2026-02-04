@@ -80,4 +80,11 @@ export type ErrorCode =
     | "error-user-daily-activity-not-found"
     | "error-user-streak-not-found"
     | "error-user-email-exist"
+    | "error-facebook-not-configured"
+    | "error-facebook-token-invalid"
+    | "error-google-not-configured"
+    | "error-google-token-invalid"
+    | "error-otp-invalid"
+    | "error-otp-rate-limit"
+    | "error-smtp-not-configured"
     | FileErrorCode;

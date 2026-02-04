@@ -5,6 +5,7 @@ import { MongoTransaction } from "@module/repository/mongo/mongo.transaction";
 import { UserMongoRepository } from "@module/user/repository/user-mongo.repository";
 import { UserModule } from "@module/user/user.module";
 import { Module } from "@nestjs/common";
+import { HttpModule } from "@nestjs/axios";
 import { JwtModule } from "@nestjs/jwt";
 import { ScheduleModule } from "@nestjs/schedule";
 import { AuthPublicController } from "./auth-public.controller";
@@ -12,11 +13,20 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtStrategy } from "./common/jwt.strategy";
 import { AuthMongoRepository } from "./repository/auth-mongo.repository";
+import { EmailService } from "./services/email.service";
+import { OtpService } from "./services/otp.service";
 
 @Module({
-    imports: [JwtModule.register({}), UserModule, ScheduleModule.forRoot()],
+    imports: [
+        HttpModule,
+        JwtModule.register({}),
+        UserModule,
+        ScheduleModule.forRoot(),
+    ],
     providers: [
         AuthService,
+        OtpService,
+        EmailService,
         RepositoryProvider(Entity.AUTH, AuthMongoRepository),
         RepositoryProvider(Entity.USER, UserMongoRepository),
         TransactionProvider(MongoTransaction),
