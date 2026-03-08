@@ -4,7 +4,7 @@ import { Users } from "../entities/users.entity";
 import { Column, DataType, Model, Table } from "sequelize-typescript";
 
 @Table({
-    tableName: "users",
+    tableName: "users_public",
     timestamps: true,
 })
 export class UsersModel extends Model implements Users {

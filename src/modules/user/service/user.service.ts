@@ -103,6 +103,23 @@ export class UserService
     }
 
     async comparePassword(user: User, password: string) {
+        if (!user?.password) return false;
         return bcrypt.compare(password, user.password);
+    }
+
+    /**
+     * Update password cho user theo ID (dùng cho admin)
+     */
+    async updatePasswordById(
+        user: User,
+        userId: string,
+        newPassword: string,
+    ): Promise<User> {
+        const hashedPassword = await createUserPassword(newPassword);
+        const updatedUser = await this.updateById(user, userId, {
+            password: hashedPassword,
+        });
+        Logger.verbose(`Password updated for user ${userId}`);
+        return updatedUser;
     }
 }

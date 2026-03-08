@@ -1,8 +1,8 @@
 import { Entity } from "@module/repository";
 import { RepositoryProvider } from "@module/repository/common/repository";
 import { TransactionProvider } from "@module/repository/common/transaction";
-import { MongoTransaction } from "@module/repository/mongo/mongo.transaction";
-import { UserMongoRepository } from "@module/user/repository/user-mongo.repository";
+import { SqlTransaction } from "@module/repository/sequelize/sql.transaction";
+import { UserSqlRepository } from "@module/user/repository/user-sql.repository";
 import { UserModule } from "@module/user/user.module";
 import { Module } from "@nestjs/common";
 import { HttpModule } from "@nestjs/axios";
@@ -28,8 +28,8 @@ import { OtpService } from "./services/otp.service";
         OtpService,
         EmailService,
         RepositoryProvider(Entity.AUTH, AuthMongoRepository),
-        RepositoryProvider(Entity.USER, UserMongoRepository),
-        TransactionProvider(MongoTransaction),
+        RepositoryProvider(Entity.USER, UserSqlRepository),
+        TransactionProvider(SqlTransaction),
         JwtStrategy,
     ],
     controllers: [AuthPublicController, AuthController],
