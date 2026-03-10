@@ -1,6 +1,7 @@
 import { Entity } from "@module/repository";
 import { RepositoryProvider } from "@module/repository/common/repository";
 import { TransactionProvider } from "@module/repository/common/transaction";
+import { UserModel } from "@module/repository/sequelize/model/user.model";
 import { SqlTransaction } from "@module/repository/sequelize/sql.transaction";
 import { UserSqlRepository } from "@module/user/repository/user-sql.repository";
 import { UserModule } from "@module/user/user.module";
@@ -8,6 +9,7 @@ import { Module } from "@nestjs/common";
 import { HttpModule } from "@nestjs/axios";
 import { JwtModule } from "@nestjs/jwt";
 import { ScheduleModule } from "@nestjs/schedule";
+import { SequelizeModule } from "@nestjs/sequelize";
 import { AuthPublicController } from "./auth-public.controller";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
@@ -21,6 +23,7 @@ import { OtpService } from "./services/otp.service";
         HttpModule,
         JwtModule.register({}),
         UserModule,
+        SequelizeModule.forFeature([UserModel]),
         ScheduleModule.forRoot(),
     ],
     providers: [
