@@ -36,4 +36,43 @@ export class UserNotificationSettingService extends BaseService<
     ): Promise<any> {
         return super.getPage(user, conditions, query);
     }
+
+    /**
+     * Lấy hoặc tạo cài đặt thông báo theo user_id (PK = user_id).
+     * Cập nhật nếu đã có, tạo mới nếu chưa có.
+     */
+    async upsertByUserId(
+        user: User,
+        dto: Partial<
+            Pick<
+                UserNotificationSetting,
+                | "daily_reminder_enabled"
+                | "reminder_time"
+                | "email_notifications"
+                | "push_notifications"
+            >
+        >,
+    ): Promise<UserNotificationSetting> {
+        const existing = await this.userNotificationSettingRepository.getById(
+            user._id,
+            {},
+        );
+        const payload = {
+            user_id: user._id,
+            ...dto,
+        };
+        if (existing) {
+            await this.userNotificationSettingRepository.updateById(
+                user._id,
+                dto as any,
+                {},
+            );
+            return { ...existing, ...dto } as UserNotificationSetting;
+        }
+        const created = await this.userNotificationSettingRepository.create(
+            payload as any,
+            {},
+        );
+        return created;
+    }
 }

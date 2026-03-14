@@ -36,4 +36,21 @@ export class UserProfileService extends BaseService<
     ): Promise<any> {
         return super.getPage(user, conditions, query);
     }
+
+    /** Lấy profile theo user_id, trả về null nếu chưa có */
+    async getByUserId(user: User): Promise<UserProfile | null> {
+        return this.userProfileRepository.getOne(
+            { user_id: user._id } as any,
+            {},
+        );
+    }
+
+    /** Lấy profile theo user_id; nếu chưa có thì tạo mới (dùng cho survey) */
+    async getOneOrCreate(user: User): Promise<UserProfile> {
+        let profile = await this.getByUserId(user);
+        if (!profile) {
+            profile = await this.create(user, { user_id: user._id } as any);
+        }
+        return profile;
+    }
 }

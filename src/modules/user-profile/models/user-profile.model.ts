@@ -67,6 +67,27 @@ export class UserProfileModel extends Model implements UserProfile {
     english_level?: string;
 
     @Column({
+        type: DataType.INTEGER,
+        allowNull: true,
+        field: "daily_learning_minutes",
+    })
+    daily_learning_minutes?: number;
+
+    @Column({
+        type: DataType.TEXT,
+        allowNull: true,
+        field: "custom_focus",
+    })
+    custom_focus?: string;
+
+    @Column({
+        type: DataType.INTEGER,
+        allowNull: true,
+        field: "course_duration_weeks",
+    })
+    course_duration_weeks?: number;
+
+    @Column({
         type: DataType.DATE,
         allowNull: false,
         defaultValue: DataType.NOW,
