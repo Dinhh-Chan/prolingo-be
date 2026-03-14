@@ -126,6 +126,9 @@ export interface Configuration {
         bucket: string;
         multipartPartSize: number;
     };
+    openai?: {
+        apiKey: string;
+    };
 }
 
 export default (): Configuration => {
@@ -273,6 +276,10 @@ export default (): Configuration => {
         ),
     };
 
+    const openaiApiKey = getEnv("OPENAI_API_KEY", "");
+    const openai =
+        openaiApiKey !== "" ? { openai: { apiKey: openaiApiKey } } : {};
+
     return {
         server,
         microservice,
@@ -287,5 +294,6 @@ export default (): Configuration => {
         smtp,
         sentry,
         minio,
+        ...openai,
     };
 };

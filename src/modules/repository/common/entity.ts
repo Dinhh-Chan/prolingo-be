@@ -55,6 +55,7 @@ export const LEARNING_PATH = "LearningPath";
 export const LEARNING_MODULE = "LearningModule";
 export const LESSON = "Lesson";
 export const LESSON_EXERCISE = "LessonExercise";
+export const LESSON_VOCABULARY = "LessonVocabulary";
 export const USER_PROGRESS = "UserProgress";
 export const USER_EXERCISE_ATTEMPT = "UserExerciseAttempt";
 export const USER_VOCABULARY_STAT = "UserVocabularyStat";

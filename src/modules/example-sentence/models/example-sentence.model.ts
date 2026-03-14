@@ -1,13 +1,6 @@
 import { StrObjectId } from "@common/constant";
-import {
-    Column,
-    DataType,
-    Model,
-    Table,
-    ForeignKey,
-} from "sequelize-typescript";
+import { Column, DataType, Model, Table } from "sequelize-typescript";
 import { ExampleSentence } from "../entities/example-sentence.entity";
-import { VocabularyModel } from "../../vocabulary/models/vocabulary.model";
 
 @Table({
     tableName: "example_sentences",
@@ -23,9 +16,8 @@ export class ExampleSentenceModel extends Model implements ExampleSentence {
     })
     _id: string;
 
-    @ForeignKey(() => VocabularyModel)
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         allowNull: false,
         field: "vocab_id",
     })

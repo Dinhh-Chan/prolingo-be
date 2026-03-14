@@ -1,13 +1,6 @@
 import { StrObjectId } from "@common/constant";
-import {
-    Column,
-    DataType,
-    Model,
-    Table,
-    ForeignKey,
-} from "sequelize-typescript";
+import { Column, DataType, Model, Table } from "sequelize-typescript";
 import { LearningModule } from "../entities/learning-module.entity";
-import { LearningPathModel } from "../../learning-path/models/learning-path.model";
 
 @Table({
     tableName: "learning_modules",
@@ -18,16 +11,14 @@ import { LearningPathModel } from "../../learning-path/models/learning-path.mode
 export class LearningModuleModel extends Model implements LearningModule {
     @StrObjectId()
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         primaryKey: true,
-        defaultValue: DataType.UUIDV4,
         field: "module_id",
     })
     _id: string;
 
-    @ForeignKey(() => LearningPathModel)
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         allowNull: false,
         field: "path_id",
     })

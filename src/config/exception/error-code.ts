@@ -73,6 +73,7 @@ export type ErrorCode =
     | "error-learning-module-not-found"
     | "error-lesson-not-found"
     | "error-lesson-exercise-not-found"
+    | "error-lesson-vocabulary-not-found"
     | "error-user-progress-not-found"
     | "error-user-exercise-attempt-not-found"
     | "error-user-vocabulary-stat-not-found"

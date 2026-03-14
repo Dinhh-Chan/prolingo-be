@@ -49,6 +49,7 @@
     "error-learning-module-not-found": "Learning module not found",
     "error-lesson-not-found": "Lesson not found",
     "error-lesson-exercise-not-found": "Lesson exercise not found",
+    "error-lesson-vocabulary-not-found": "Lesson vocabulary not found",
     "error-user-progress-not-found": "User progress not found",
     "error-user-exercise-attempt-not-found": "User exercise attempt not found",
     "error-user-vocabulary-stat-not-found": "User vocabulary stat not found",

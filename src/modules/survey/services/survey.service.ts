@@ -1,9 +1,14 @@
 import { Injectable } from "@nestjs/common";
+import { randomBytes } from "crypto";
 import { User } from "@module/user/entities/user.entity";
 import { UserProfileService } from "@module/user-profile/services/user-profile.service";
 import { UserNotificationSettingService } from "@module/user-notification-setting/services/user-notification-setting.service";
-import { IndustryService } from "@module/industry/services/industry.service";
-import { JobRoleService } from "@module/job-role/services/job-role.service";
+import { LearningPathService } from "@module/learning-path/services/learning-path.service";
+import { LearningModuleService } from "@module/learning-module/services/learning-module.service";
+import { LessonService } from "@module/lesson/services/lesson.service";
+import { VocabularyService } from "@module/vocabulary/services/vocabulary.service";
+import { ExampleSentenceService } from "@module/example-sentence/services/example-sentence.service";
+import { LessonVocabularyService } from "@module/lesson-vocabulary/services/lesson-vocabulary.service";
 import {
     SURVEY_CURRENT_STATUS_OPTIONS,
     SURVEY_ENGLISH_LEVEL_OPTIONS,
@@ -13,14 +18,26 @@ import {
 import { SurveyOptionsResponseDto } from "../dto/survey-options-response.dto";
 import { SubmitSurveyDto } from "../dto/submit-survey.dto";
 import { UserProfile } from "@module/user-profile/entities/user-profile.entity";
+import { OpenAILearningPathService } from "./openai-learning-path.service";
+import { LearningPath } from "@module/learning-path/entities/learning-path.entity";
+import { LearningModule } from "@module/learning-module/entities/learning-module.entity";
+import { Lesson } from "@module/lesson/entities/lesson.entity";
+import { Vocabulary } from "@module/vocabulary/entities/vocabulary.entity";
+import { ExampleSentence } from "@module/example-sentence/entities/example-sentence.entity";
+import { BadRequestException } from "@nestjs/common";
 
 @Injectable()
 export class SurveyService {
     constructor(
         private readonly userProfileService: UserProfileService,
         private readonly userNotificationSettingService: UserNotificationSettingService,
-        private readonly industryService: IndustryService,
-        private readonly jobRoleService: JobRoleService,
+        private readonly learningPathService: LearningPathService,
+        private readonly learningModuleService: LearningModuleService,
+        private readonly lessonService: LessonService,
+        private readonly vocabularyService: VocabularyService,
+        private readonly exampleSentenceService: ExampleSentenceService,
+        private readonly lessonVocabularyService: LessonVocabularyService,
+        private readonly openAILearningPathService: OpenAILearningPathService,
     ) {}
 
     /**
@@ -28,29 +45,13 @@ export class SurveyService {
      * Who are you?, Select your field, English level, Daily goal, Course duration
      */
     async getOptions(user: User): Promise<SurveyOptionsResponseDto> {
-        const [industries, jobRoles] = await Promise.all([
-            this.industryService.getMany(user, { is_active: true }, {}),
-            this.jobRoleService.getMany(user, { is_active: true }, {}),
-        ]);
-
         return {
             currentStatusOptions: [...SURVEY_CURRENT_STATUS_OPTIONS],
             englishLevelOptions: [...SURVEY_ENGLISH_LEVEL_OPTIONS],
             dailyGoalOptions: [...SURVEY_DAILY_GOAL_OPTIONS],
             courseDurationOptions: [...SURVEY_COURSE_DURATION_OPTIONS],
-            industries: industries.map((i) => ({
-                _id: i._id,
-                name_en: i.name_en,
-                name_vi: i.name_vi,
-                slug: i.slug,
-            })),
-            jobRoles: jobRoles.map((r) => ({
-                _id: r._id,
-                industry_id: r.industry_id,
-                name_en: r.name_en,
-                name_vi: r.name_vi,
-                slug: r.slug,
-            })),
+            industries: [],
+            jobRoles: [],
         };
     }
 
@@ -85,5 +86,188 @@ export class SurveyService {
         });
 
         return { success: true, profile_id: profile._id };
+    }
+
+    /**
+     * Từ thông tin survey của user, gọi OpenAI sinh lộ trình học 4 tuần rồi tạo LearningPath + Modules + Lessons.
+     */
+    async generateLearningPathFromSurvey(user: User): Promise<{
+        path: LearningPath;
+        modules: LearningModule[];
+        lessonCount: number;
+    }> {
+        if (!this.openAILearningPathService.isConfigured()) {
+            throw new BadRequestException(
+                "OPENAI_API_KEY is not configured. Cannot generate learning path.",
+            );
+        }
+
+        const profile = await this.userProfileService.getByUserId(user);
+        if (!profile) {
+            throw new BadRequestException(
+                "User has not completed survey. Please submit survey first.",
+            );
+        }
+
+        const context = {
+            current_status: profile.current_status,
+            industry_name: undefined as string | undefined,
+            english_level: profile.english_level,
+            daily_learning_minutes: profile.daily_learning_minutes,
+            custom_focus: profile.custom_focus,
+            course_duration_weeks: profile.course_duration_weeks ?? 4,
+        };
+
+        const payload =
+            await this.openAILearningPathService.generateLearningPath(context);
+
+        const path = await this.learningPathService.create(user, {
+            name_en: payload.name_en,
+            name_vi: payload.name_vi,
+            description: payload.description,
+            target_level: payload.target_level,
+            estimated_hours: Math.ceil(
+                payload.estimated_hours ??
+                    (4 * 5 * (profile.daily_learning_minutes ?? 15)) / 60,
+            ),
+            industry_id: profile.industry_id,
+            is_active: true,
+        } as Partial<LearningPath>);
+
+        const createdModules: LearningModule[] = [];
+        let lessonCount = 0;
+
+        for (const mod of payload.modules) {
+            const createdModule = await this.learningModuleService.create(
+                user,
+                {
+                    path_id: path._id,
+                    name_en: mod.name_en,
+                    name_vi: mod.name_vi,
+                    order_index: mod.order_index,
+                } as Partial<LearningModule>,
+            );
+            createdModules.push(createdModule);
+
+            for (const les of mod.lessons) {
+                await this.lessonService.create(user, {
+                    module_id: createdModule._id,
+                    name_en: les.name_en,
+                    name_vi: les.name_vi,
+                    order_index: les.order_index,
+                    lesson_type: les.lesson_type,
+                    estimated_minutes: les.estimated_minutes,
+                } as Partial<Lesson>);
+                lessonCount += 1;
+            }
+        }
+
+        return { path, modules: createdModules, lessonCount };
+    }
+
+    /**
+     * Sinh lịch 7 ngày từ survey: 1 path, 1 module (tuần), 7 lesson (mỗi ngày),
+     * mỗi ngày có từ vựng kèm usage example + dịch, lưu vocabulary, example_sentences, lesson_vocabulary.
+     */
+    async generateSchedule7DaysFromSurvey(user: User): Promise<{
+        path: LearningPath;
+        module: LearningModule;
+        lessons: Lesson[];
+        totalVocabulary: number;
+    }> {
+        if (!this.openAILearningPathService.isConfigured()) {
+            throw new BadRequestException(
+                "OPENAI_API_KEY is not configured. Cannot generate schedule.",
+            );
+        }
+
+        const profile = await this.userProfileService.getByUserId(user);
+        if (!profile) {
+            throw new BadRequestException(
+                "User has not completed survey. Please submit survey first.",
+            );
+        }
+
+        const context = {
+            current_status: profile.current_status,
+            industry_name: undefined as string | undefined,
+            english_level: profile.english_level,
+            daily_learning_minutes: profile.daily_learning_minutes,
+            custom_focus: profile.custom_focus,
+            course_duration_weeks: profile.course_duration_weeks ?? 4,
+        };
+
+        const payload =
+            await this.openAILearningPathService.generateSchedule7Days(context);
+
+        const path = await this.learningPathService.create(user, {
+            name_en: payload.name_en,
+            name_vi: payload.name_vi,
+            description: payload.description,
+            target_level: "beginner",
+            estimated_hours: Math.ceil(
+                (7 * (profile.daily_learning_minutes ?? 15)) / 60,
+            ),
+            industry_id: profile.industry_id,
+            is_active: true,
+        } as Partial<LearningPath>);
+
+        const createdModule = await this.learningModuleService.create(user, {
+            path_id: path._id,
+            name_en: "Week 1",
+            name_vi: "Tuần 1",
+            order_index: 1,
+        } as Partial<LearningModule>);
+
+        const createdLessons: Lesson[] = [];
+        let totalVocabulary = 0;
+
+        for (const day of payload.days) {
+            const lesson = await this.lessonService.create(user, {
+                module_id: createdModule._id,
+                name_en: day.name_en,
+                name_vi: day.name_vi,
+                order_index: day.order_index,
+                lesson_type: "vocabulary",
+                estimated_minutes: profile.daily_learning_minutes ?? 15,
+            } as Partial<Lesson>);
+            createdLessons.push(lesson);
+
+            for (let i = 0; i < (day.vocabulary?.length ?? 0); i++) {
+                const v = day.vocabulary[i];
+                const vocab = await this.vocabularyService.create(user, {
+                    word: v.word ?? "",
+                    phonetic: v.phonetic ?? undefined,
+                    part_of_speech: v.part_of_speech ?? undefined,
+                    definition_en: v.definition_en ?? undefined,
+                    definition_vi: v.definition_vi ?? undefined,
+                    difficulty_level: v.difficulty_level ?? undefined,
+                    audio_url: undefined,
+                    image_url: undefined,
+                } as Partial<Vocabulary>);
+
+                await this.exampleSentenceService.create(user, {
+                    vocab_id: vocab._id,
+                    sentence_en: v.usage_example_en ?? "",
+                    sentence_vi: v.usage_example_vi ?? undefined,
+                } as Partial<ExampleSentence>);
+
+                const lvId = randomBytes(12).toString("hex");
+                await this.lessonVocabularyService.create(user, {
+                    _id: lvId,
+                    lesson_id: lesson._id,
+                    vocab_id: vocab._id,
+                    order_index: i + 1,
+                } as any);
+                totalVocabulary += 1;
+            }
+        }
+
+        return {
+            path,
+            module: createdModule,
+            lessons: createdLessons,
+            totalVocabulary,
+        };
     }
 }

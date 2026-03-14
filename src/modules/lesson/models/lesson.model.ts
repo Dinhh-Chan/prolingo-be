@@ -1,13 +1,6 @@
 import { StrObjectId } from "@common/constant";
-import {
-    Column,
-    DataType,
-    Model,
-    Table,
-    ForeignKey,
-} from "sequelize-typescript";
+import { Column, DataType, Model, Table } from "sequelize-typescript";
 import { Lesson } from "../entities/lesson.entity";
-import { LearningModuleModel } from "../../learning-module/models/learning-module.model";
 
 @Table({
     tableName: "lessons",
@@ -18,16 +11,14 @@ import { LearningModuleModel } from "../../learning-module/models/learning-modul
 export class LessonModel extends Model implements Lesson {
     @StrObjectId()
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         primaryKey: true,
-        defaultValue: DataType.UUIDV4,
         field: "lesson_id",
     })
     _id: string;
 
-    @ForeignKey(() => LearningModuleModel)
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         allowNull: false,
         field: "module_id",
     })

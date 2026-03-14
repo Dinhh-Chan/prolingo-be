@@ -6,13 +6,11 @@ import { Entity } from "@module/repository";
 import { RepositoryProvider } from "@module/repository/common/repository";
 import { SequelizeModule } from "@nestjs/sequelize";
 import { LearningPathRepositorySql } from "./repository/learning-path-repository.sql";
-import { IndustryModule } from "../industry/industry.module";
 import { CertificationModule } from "../certification/certification.module";
 
 @Module({
     imports: [
         SequelizeModule.forFeature([LearningPathModel]),
-        IndustryModule,
         CertificationModule,
     ],
     controllers: [LearningPathController],

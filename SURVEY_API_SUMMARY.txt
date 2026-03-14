@@ -1,0 +1,196 @@
+================================================================================
+TÓM TẮT API: LUỒNG TỪ ĐĂNG NHẬP ĐẾN SINH LỊCH 7 NGÀY + TỪ VỰNG
+================================================================================
+Base URL: http://localhost:3009 (hoặc SERVER_ADDRESS trong .env)
+
+--------------------------------------------------------------------------------
+1. ĐĂNG NHẬP (lấy token cho các API cần auth)
+--------------------------------------------------------------------------------
+POST /auth/login
+Header: Content-Type: application/json
+Body (payload):
+
+{
+  "username": "admin",
+  "password": "admin",
+  "platform": "Web"
+}
+
+- platform: bắt buộc, chỉ được "Web" hoặc "Mobile"
+
+Response mẫu (200):
+
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "accessExpireAt": 1773466258,
+    "refreshExpireAt": 1789014658
+  }
+}
+
+→ Dùng data.accessToken cho header: Authorization: Bearer <accessToken>
+
+--------------------------------------------------------------------------------
+2. LẤY LỰA CHỌN FORM KHẢO SÁT (optional)
+--------------------------------------------------------------------------------
+GET /survey/options
+Header: Authorization: Bearer <accessToken>
+
+Không cần body.
+
+Response mẫu (200):
+
+{
+  "success": true,
+  "data": {
+    "currentStatusOptions": [
+      { "value": "student", "label_en": "...", "label_vi": "..." },
+      ...
+    ],
+    "englishLevelOptions": [ { "value": "A1", ... }, ... ],
+    "dailyGoalOptions": [ { "value": 10, ... }, ... ],
+    "courseDurationOptions": [ { "value": 2, ... }, ... ],
+    "industries": [],
+    "jobRoles": []
+  }
+}
+
+--------------------------------------------------------------------------------
+3. GỬI KẾT QUẢ KHẢO SÁT
+--------------------------------------------------------------------------------
+POST /survey
+Header:
+  Content-Type: application/json
+  Authorization: Bearer <accessToken>
+
+Body (payload) – tất cả trường optional:
+
+{
+  "current_status": "student",
+  "industry_id": null,
+  "role_id": null,
+  "english_level": "B1",
+  "daily_learning_minutes": 15,
+  "daily_reminder_enabled": true,
+  "reminder_time": "19:15",
+  "custom_focus": "Business English",
+  "course_duration_weeks": 4
+}
+
+- current_status: "student" | "working" | "switching_career"
+- english_level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2"
+- daily_learning_minutes: 10 | 15 | 20 | 30
+- course_duration_weeks: 2 | 4 | 8
+
+Response mẫu (201):
+
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "profile_id": "69b4d4a4e1c721717bf1feea"
+  }
+}
+
+--------------------------------------------------------------------------------
+4a. SINH LỘ TRÌNH 4 TUẦN (path + modules + lessons, không có từ vựng chi tiết)
+--------------------------------------------------------------------------------
+POST /survey/generate-learning-path
+Header: Authorization: Bearer <accessToken>
+Body: không cần (dùng profile từ survey đã gửi)
+
+Response mẫu (201):
+
+{
+  "success": true,
+  "data": {
+    "path": {
+      "_id": "...",
+      "name_en": "...",
+      "name_vi": "...",
+      "description": "...",
+      "target_level": "...",
+      "estimated_hours": 20,
+      "industry_id": null,
+      "is_active": true,
+      "created_at": "..."
+    },
+    "modules": [
+      {
+        "_id": "...",
+        "path_id": "...",
+        "name_en": "Week 1",
+        "name_vi": "Tuần 1",
+        "order_index": 1,
+        "created_at": "..."
+      },
+      ...
+    ],
+    "lessonCount": 16
+  }
+}
+
+--------------------------------------------------------------------------------
+4b. SINH LỊCH 7 NGÀY + TỪ VỰNG (path + 1 module + 7 lesson + vocab + usage example)
+--------------------------------------------------------------------------------
+POST /survey/generate-schedule-7days
+Header: Authorization: Bearer <accessToken>
+Body: không cần (dùng profile từ survey đã gửi)
+
+Response mẫu (201):
+
+{
+  "success": true,
+  "data": {
+    "path": {
+      "_id": "69b4e4b3d0d3c0e64dc7187e",
+      "name_en": "Business English Vocabulary for Students",
+      "name_vi": "Từ vựng Tiếng Anh Kinh doanh cho Sinh viên",
+      "description": "A focused vocabulary schedule...",
+      "target_level": "beginner",
+      "estimated_hours": 2,
+      "industry_id": null,
+      "is_active": true,
+      "created_at": "2026-03-14T04:31:47.888Z",
+      "certification_id": null
+    },
+    "module": {
+      "_id": "69b4e4b3d0d3c0e64dc7187f",
+      "path_id": "69b4e4b3d0d3c0e64dc7187e",
+      "name_en": "Week 1",
+      "name_vi": "Tuần 1",
+      "order_index": 1,
+      "created_at": "2026-03-14T04:31:47.908Z"
+    },
+    "lessons": [
+      {
+        "_id": "69b4e4b3d0d3c0e64dc71880",
+        "module_id": "69b4e4b3d0d3c0e64dc7187f",
+        "name_en": "Day 1",
+        "name_vi": "Ngày 1",
+        "order_index": 1,
+        "lesson_type": "vocabulary",
+        "estimated_minutes": 15,
+        "created_at": "2026-03-14T04:31:47.914Z"
+      },
+      ... (Day 2 đến Day 7)
+    ],
+    "totalVocabulary": 21
+  }
+}
+
+- Mỗi lesson (ngày) có danh sách từ vựng trong bảng lesson_vocabulary.
+- Mỗi từ vựng có bản ghi trong vocabulary và ít nhất 1 example_sentence (usage_example_en + sentence_vi).
+
+--------------------------------------------------------------------------------
+THỨ TỰ GỌI API GỢI Ý (luồng sinh từ vựng 7 ngày)
+--------------------------------------------------------------------------------
+1. POST /auth/login     → lấy accessToken
+2. POST /survey         → gửi khảo sát (payload tùy chọn)
+3. POST /survey/generate-schedule-7days   → sinh 7 ngày + từ vựng (cần OPENAI_API_KEY)
+
+Lưu ý: generate-schedule-7days và generate-learning-path cần user đã gửi survey (POST /survey) trước; nếu chưa gửi sẽ trả 400 "User has not completed survey".
+
+================================================================================

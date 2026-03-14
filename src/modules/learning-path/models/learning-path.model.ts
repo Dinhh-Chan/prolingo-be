@@ -7,7 +7,6 @@ import {
     ForeignKey,
 } from "sequelize-typescript";
 import { LearningPath } from "../entities/learning-path.entity";
-import { IndustryModel } from "../../industry/models/industry.model";
 import { CertificationModel } from "../../certification/models/certification.model";
 
 @Table({
@@ -19,9 +18,8 @@ import { CertificationModel } from "../../certification/models/certification.mod
 export class LearningPathModel extends Model implements LearningPath {
     @StrObjectId()
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         primaryKey: true,
-        defaultValue: DataType.UUIDV4,
         field: "path_id",
     })
     _id: string;
@@ -40,9 +38,8 @@ export class LearningPathModel extends Model implements LearningPath {
     })
     name_vi: string;
 
-    @ForeignKey(() => IndustryModel)
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         allowNull: true,
         field: "industry_id",
     })

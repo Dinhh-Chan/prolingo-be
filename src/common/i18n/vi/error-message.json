@@ -56,6 +56,7 @@
     "error-learning-module-not-found": "Không tìm thấy module học",
     "error-lesson-not-found": "Không tìm thấy bài học",
     "error-lesson-exercise-not-found": "Không tìm thấy bài tập trong bài học",
+    "error-lesson-vocabulary-not-found": "Không tìm thấy từ vựng trong bài học",
     "error-user-progress-not-found": "Không tìm thấy tiến độ người dùng",
     "error-user-exercise-attempt-not-found": "Không tìm thấy lần làm bài của người dùng",
     "error-user-vocabulary-stat-not-found": "Không tìm thấy thống kê từ vựng người dùng",

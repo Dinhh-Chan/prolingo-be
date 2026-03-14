@@ -7,14 +7,12 @@ import { RepositoryProvider } from "@module/repository/common/repository";
 import { SequelizeModule } from "@nestjs/sequelize";
 import { UserVocabularyStatRepositorySql } from "./repository/user-vocabulary-stat-repository.sql";
 import { UserModule } from "../user/user.module";
-import { IndustryModule } from "../industry/industry.module";
 import { CertificationModule } from "../certification/certification.module";
 
 @Module({
     imports: [
         SequelizeModule.forFeature([UserVocabularyStatModel]),
         UserModule,
-        IndustryModule,
         CertificationModule,
     ],
     controllers: [UserVocabularyStatController],

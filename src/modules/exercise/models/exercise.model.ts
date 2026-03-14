@@ -8,7 +8,6 @@ import {
 } from "sequelize-typescript";
 import { Exercise } from "../entities/exercise.entity";
 import { ExerciseTypeModel } from "../../exercise-type/models/exercise-type.model";
-import { ConceptModel } from "../../concept/models/concept.model";
 import { VocabularyModel } from "../../vocabulary/models/vocabulary.model";
 
 @Table({
@@ -35,7 +34,6 @@ export class ExerciseModel extends Model implements Exercise {
     })
     type_id: string;
 
-    @ForeignKey(() => ConceptModel)
     @Column({
         type: DataType.UUID,
         allowNull: true,

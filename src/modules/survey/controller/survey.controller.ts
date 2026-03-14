@@ -40,4 +40,33 @@ export class SurveyController {
     async submitSurvey(@ReqUser() user: User, @Body() dto: SubmitSurveyDto) {
         return this.surveyService.submitSurvey(user, dto);
     }
+
+    @Post("generate-learning-path")
+    @ApiOperation({
+        summary: "Sinh lộ trình học 4 tuần từ kết quả khảo sát",
+        description:
+            "Dùng OpenAI để tạo lộ trình (path + modules + lessons) theo survey đã gửi, rồi lưu vào DB.",
+    })
+    @ApiResponse({
+        status: 201,
+        description: "Đã tạo lộ trình học (path, modules, lessonCount).",
+    })
+    async generateLearningPathFromSurvey(@ReqUser() user: User) {
+        return this.surveyService.generateLearningPathFromSurvey(user);
+    }
+
+    @Post("generate-schedule-7days")
+    @ApiOperation({
+        summary: "Sinh lịch học 7 ngày từ khảo sát",
+        description:
+            "Sinh 7 ngày (7 lesson), mỗi ngày có từ vựng kèm usage example và bản dịch. Lưu path, module, lessons, vocabulary, example_sentences, lesson_vocabulary.",
+    })
+    @ApiResponse({
+        status: 201,
+        description:
+            "Đã tạo lịch 7 ngày (path, module, lessons, totalVocabulary).",
+    })
+    async generateSchedule7Days(@ReqUser() user: User) {
+        return this.surveyService.generateSchedule7DaysFromSurvey(user);
+    }
 }

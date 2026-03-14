@@ -9,7 +9,6 @@ import {
 } from "sequelize-typescript";
 import { UserVocabularyStat } from "../entities/user-vocabulary-stat.entity";
 import { UserModel } from "@module/repository/sequelize/model/user.model";
-import { IndustryModel } from "../../industry/models/industry.model";
 import { CertificationModel } from "../../certification/models/certification.model";
 
 @Table({
@@ -47,9 +46,8 @@ export class UserVocabularyStatModel
     user_id: string;
 
     @Unique("user_industry_cert_unique")
-    @ForeignKey(() => IndustryModel)
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         allowNull: true,
         field: "industry_id",
     })
