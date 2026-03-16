@@ -11,6 +11,7 @@ export interface SurveyContextForAI {
     english_level?: string;
     daily_learning_minutes?: number;
     custom_focus?: string;
+    custom_focus_2?: string;
     course_duration_weeks?: number;
 }
 
@@ -31,7 +32,7 @@ const SYSTEM_PROMPT = `You are an expert English learning path designer. Given a
           "name_en": "string - lesson title in English",
           "name_vi": "string - lesson title in Vietnamese",
           "order_index": number - 1-based order in module,
-          "lesson_type": "string - one of: vocabulary, listening, reading, writing, speaking",
+          "lesson_type": "string - always vocabulary (only vocabulary study mode is used for now)",
           "estimated_minutes": number - optional
         }
       ]
@@ -39,12 +40,13 @@ const SYSTEM_PROMPT = `You are an expert English learning path designer. Given a
   ]
 }
 Rules:
-- For a 4-week path, output exactly 4 modules. Each module represents one week.
-- Distribute lessons across modules (e.g. 3-5 lessons per week). Total lessons ~12-20.
+- Design a short, intensive 7-day English vocabulary learning path.
+- Output exactly 7 modules. Each module represents one day in the 7-day path.
+- Each module should contain 2–4 lessons. Every lesson is a vocabulary-focused study session (lesson_type = "vocabulary").
 - Match content to: user role (student/working/career changer), industry if given, English level, and custom_focus.
 - Use only the keys above. Output nothing else but the JSON.`;
 
-const SCHEDULE_7_DAYS_PROMPT = `You are an expert English learning path designer. Given a user's survey answers, output a single valid JSON object (no markdown, no code block) with this exact structure:
+const SCHEDULE_7_DAYS_PROMPT = `You are an expert English vocabulary designer. Given a user's survey answers, output a single valid JSON object (no markdown, no code block) with this exact structure:
 {
   "name_en": "string - 7-day schedule title in English",
   "name_vi": "string - 7-day schedule title in Vietnamese",
@@ -63,7 +65,7 @@ const SCHEDULE_7_DAYS_PROMPT = `You are an expert English learning path designer
           "definition_en": "string - English definition",
           "definition_vi": "string - Vietnamese definition",
           "difficulty_level": "string - e.g. A1, B2",
-          "usage_example_en": "string - one example sentence in English using the word",
+          "usage_example_en": "string - exactly one example sentence in English using the word",
           "usage_example_vi": "string - Vietnamese translation of the example sentence"
         }
       ]
@@ -71,8 +73,10 @@ const SCHEDULE_7_DAYS_PROMPT = `You are an expert English learning path designer
   ]
 }
 Rules:
-- Output exactly 7 days. Each day must have at least 3 and at most 8 vocabulary items.
-- Every vocabulary item must have: word, usage_example_en, usage_example_vi. Other fields can be empty string if not applicable.
+- Output exactly 7 days.
+- For each day, output exactly 10 vocabulary items in the "vocabulary" array.
+- The application will later split each day's 10 vocabulary items into 2 learning modules with 5 new words per module, so make sure the 10 words of a day form a coherent theme.
+- Every vocabulary item must have: "word", "usage_example_en", "usage_example_vi". Other fields can be empty string if not applicable.
 - Match content to: user role, industry if given, English level, custom_focus.
 - Use only the keys above. Output nothing else but the JSON.`;
 
@@ -97,7 +101,7 @@ export class OpenAILearningPathService {
         }
 
         const userPrompt = [
-            "Design a 4-week English learning path with the following survey data:",
+            "Design a 7-day intensive English vocabulary learning path with the following survey data:",
             context.current_status &&
                 `- Current role: ${context.current_status}`,
             context.industry_name &&
@@ -108,6 +112,8 @@ export class OpenAILearningPathService {
                 `- Daily study time: ${context.daily_learning_minutes} minutes`,
             context.custom_focus &&
                 `- Custom focus/goals: ${context.custom_focus}`,
+            context.custom_focus_2 &&
+                `- Additional focus: ${context.custom_focus_2}`,
             context.course_duration_weeks &&
                 `- Course duration: ${context.course_duration_weeks} weeks`,
         ]
@@ -167,6 +173,8 @@ export class OpenAILearningPathService {
                 `- Daily study time: ${context.daily_learning_minutes} minutes`,
             context.custom_focus &&
                 `- Custom focus/goals: ${context.custom_focus}`,
+            context.custom_focus_2 &&
+                `- Additional focus: ${context.custom_focus_2}`,
             context.course_duration_weeks &&
                 `- Course duration: ${context.course_duration_weeks} weeks`,
         ]

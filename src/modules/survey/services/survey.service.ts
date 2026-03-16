@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { randomBytes } from "crypto";
 import { User } from "@module/user/entities/user.entity";
-import { UserProfileService } from "@module/user-profile/services/user-profile.service";
 import { UserNotificationSettingService } from "@module/user-notification-setting/services/user-notification-setting.service";
 import { LearningPathService } from "@module/learning-path/services/learning-path.service";
 import { LearningModuleService } from "@module/learning-module/services/learning-module.service";
@@ -17,7 +16,6 @@ import {
 } from "../constants/survey-options.constant";
 import { SurveyOptionsResponseDto } from "../dto/survey-options-response.dto";
 import { SubmitSurveyDto } from "../dto/submit-survey.dto";
-import { UserProfile } from "@module/user-profile/entities/user-profile.entity";
 import { OpenAILearningPathService } from "./openai-learning-path.service";
 import { LearningPath } from "@module/learning-path/entities/learning-path.entity";
 import { LearningModule } from "@module/learning-module/entities/learning-module.entity";
@@ -25,11 +23,15 @@ import { Lesson } from "@module/lesson/entities/lesson.entity";
 import { Vocabulary } from "@module/vocabulary/entities/vocabulary.entity";
 import { ExampleSentence } from "@module/example-sentence/entities/example-sentence.entity";
 import { BadRequestException } from "@nestjs/common";
+import { InjectRepository } from "@module/repository/common/repository";
+import { Entity } from "@module/repository";
+import { SurveyRepository } from "../repository/survey-repository.interface";
 
 @Injectable()
 export class SurveyService {
     constructor(
-        private readonly userProfileService: UserProfileService,
+        @InjectRepository(Entity.SURVEY)
+        private readonly surveyRepository: SurveyRepository,
         private readonly userNotificationSettingService: UserNotificationSettingService,
         private readonly learningPathService: LearningPathService,
         private readonly learningModuleService: LearningModuleService,
@@ -56,36 +58,37 @@ export class SurveyService {
     }
 
     /**
-     * Gửi kết quả khảo sát: cập nhật profile, notification setting
+     * Gửi kết quả khảo sát: lưu bản ghi survey, cập nhật notification setting
      */
     async submitSurvey(user: User, dto: SubmitSurveyDto) {
-        const profile = await this.userProfileService.getOneOrCreate(user);
-        const profileUpdate: Partial<UserProfile> = {};
-        if (dto.current_status !== undefined)
-            profileUpdate.current_status = dto.current_status;
-        if (dto.industry_id !== undefined)
-            profileUpdate.industry_id = dto.industry_id;
-        if (dto.role_id !== undefined) profileUpdate.role_id = dto.role_id;
-        if (dto.english_level !== undefined)
-            profileUpdate.english_level = dto.english_level;
-        if (dto.daily_learning_minutes !== undefined)
-            profileUpdate.daily_learning_minutes = dto.daily_learning_minutes;
-        if (dto.custom_focus !== undefined)
-            profileUpdate.custom_focus = dto.custom_focus;
-        if (dto.course_duration_weeks !== undefined)
-            profileUpdate.course_duration_weeks = dto.course_duration_weeks;
-        await this.userProfileService.updateById(
-            user,
-            profile._id,
-            profileUpdate as any,
-        );
-
         await this.userNotificationSettingService.upsertByUserId(user, {
             daily_reminder_enabled: dto.daily_reminder_enabled,
             reminder_time: dto.reminder_time,
         });
 
-        return { success: true, profile_id: profile._id };
+        // Lưu toàn bộ lượt survey vào bảng surveys
+        await this.surveyRepository.create({
+            user_id: user._id,
+            current_status: dto.current_status,
+            industry_name: dto.industry_name,
+            role_id: dto.role_id,
+            english_level: dto.english_level,
+            daily_learning_minutes: dto.daily_learning_minutes,
+            daily_reminder_enabled: dto.daily_reminder_enabled,
+            reminder_time: dto.reminder_time,
+            custom_focus: dto.custom_focus,
+            custom_focus_2: dto.custom_focus_2,
+            course_duration_weeks: dto.course_duration_weeks,
+        } as any);
+
+        return { success: true };
+    }
+
+    async hasAnySurvey(user: User): Promise<boolean> {
+        return this.surveyRepository.exists(
+            { user_id: user._id } as any,
+            { enableDataPartition: false } as any,
+        );
     }
 
     /**
@@ -102,35 +105,42 @@ export class SurveyService {
             );
         }
 
-        const profile = await this.userProfileService.getByUserId(user);
-        if (!profile) {
+        const latestSurvey = await this.surveyRepository.getOne(
+            { user_id: user._id } as any,
+            {
+                sort: { created_at: -1 } as any,
+                enableDataPartition: false,
+            } as any,
+        );
+        if (!latestSurvey) {
             throw new BadRequestException(
                 "User has not completed survey. Please submit survey first.",
             );
         }
 
         const context = {
-            current_status: profile.current_status,
-            industry_name: undefined as string | undefined,
-            english_level: profile.english_level,
-            daily_learning_minutes: profile.daily_learning_minutes,
-            custom_focus: profile.custom_focus,
-            course_duration_weeks: profile.course_duration_weeks ?? 4,
+            current_status: latestSurvey.current_status,
+            industry_name: latestSurvey.industry_name,
+            english_level: latestSurvey.english_level,
+            daily_learning_minutes: latestSurvey.daily_learning_minutes,
+            custom_focus: latestSurvey.custom_focus,
+            custom_focus_2: latestSurvey.custom_focus_2,
+            course_duration_weeks: latestSurvey.course_duration_weeks ?? 4,
         };
 
         const payload =
             await this.openAILearningPathService.generateLearningPath(context);
 
         const path = await this.learningPathService.create(user, {
+            user_id: user._id,
             name_en: payload.name_en,
             name_vi: payload.name_vi,
             description: payload.description,
             target_level: payload.target_level,
             estimated_hours: Math.ceil(
                 payload.estimated_hours ??
-                    (4 * 5 * (profile.daily_learning_minutes ?? 15)) / 60,
+                    (4 * 5 * (latestSurvey.daily_learning_minutes ?? 15)) / 60,
             ),
-            industry_id: profile.industry_id,
             is_active: true,
         } as Partial<LearningPath>);
 
@@ -181,34 +191,41 @@ export class SurveyService {
             );
         }
 
-        const profile = await this.userProfileService.getByUserId(user);
-        if (!profile) {
+        const latestSurvey = await this.surveyRepository.getOne(
+            { user_id: user._id } as any,
+            {
+                sort: { created_at: -1 } as any,
+                enableDataPartition: false,
+            } as any,
+        );
+        if (!latestSurvey) {
             throw new BadRequestException(
                 "User has not completed survey. Please submit survey first.",
             );
         }
 
         const context = {
-            current_status: profile.current_status,
-            industry_name: undefined as string | undefined,
-            english_level: profile.english_level,
-            daily_learning_minutes: profile.daily_learning_minutes,
-            custom_focus: profile.custom_focus,
-            course_duration_weeks: profile.course_duration_weeks ?? 4,
+            current_status: latestSurvey.current_status,
+            industry_name: latestSurvey.industry_name,
+            english_level: latestSurvey.english_level,
+            daily_learning_minutes: latestSurvey.daily_learning_minutes,
+            custom_focus: latestSurvey.custom_focus,
+            custom_focus_2: latestSurvey.custom_focus_2,
+            course_duration_weeks: latestSurvey.course_duration_weeks ?? 4,
         };
 
         const payload =
             await this.openAILearningPathService.generateSchedule7Days(context);
 
         const path = await this.learningPathService.create(user, {
+            user_id: user._id,
             name_en: payload.name_en,
             name_vi: payload.name_vi,
             description: payload.description,
             target_level: "beginner",
             estimated_hours: Math.ceil(
-                (7 * (profile.daily_learning_minutes ?? 15)) / 60,
+                (7 * (latestSurvey.daily_learning_minutes ?? 15)) / 60,
             ),
-            industry_id: profile.industry_id,
             is_active: true,
         } as Partial<LearningPath>);
 
@@ -229,7 +246,7 @@ export class SurveyService {
                 name_vi: day.name_vi,
                 order_index: day.order_index,
                 lesson_type: "vocabulary",
-                estimated_minutes: profile.daily_learning_minutes ?? 15,
+                estimated_minutes: latestSurvey.daily_learning_minutes ?? 15,
             } as Partial<Lesson>);
             createdLessons.push(lesson);
 

@@ -5,6 +5,7 @@ import { TransactionProvider } from "@module/repository/common/transaction";
 import { SqlTransaction } from "@module/repository/sequelize/sql.transaction";
 import { Module } from "@nestjs/common";
 import { SequelizeModule } from "@nestjs/sequelize";
+import { SurveyModule } from "@module/survey/survey.module";
 import { UserImportController } from "./controller/user-import.controller";
 import { UserController } from "./controller/user.controller";
 import { UserSqlRepository } from "./repository/user-sql.repository";
@@ -12,7 +13,7 @@ import { UserImportService } from "./service/user-import.service";
 import { UserService } from "./service/user.service";
 
 @Module({
-    imports: [SequelizeModule.forFeature([UserModel])],
+    imports: [SequelizeModule.forFeature([UserModel]), SurveyModule],
     controllers: [UserController, UserImportController],
     providers: [
         UserService,

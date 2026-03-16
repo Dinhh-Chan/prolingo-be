@@ -15,6 +15,15 @@ export class LearningPath implements BaseEntity {
     _id: string;
 
     @IsString()
+    @MaxLength(64)
+    @IsOptional()
+    @EntityDefinition.field({
+        label: "User ID",
+        required: false,
+    })
+    user_id?: string;
+
+    @IsString()
     @MaxLength(200)
     @IsNotEmpty({ message: "Tên lộ trình học (tiếng Anh) không được để trống" })
     @EntityDefinition.field({
@@ -33,16 +42,6 @@ export class LearningPath implements BaseEntity {
         required: true,
     })
     name_vi: string;
-
-    @IsString()
-    @IsOptional()
-    @EntityDefinition.field({ label: "Industry ID" })
-    industry_id?: string;
-
-    @IsString()
-    @IsOptional()
-    @EntityDefinition.field({ label: "Certification ID" })
-    certification_id?: string;
 
     @IsString()
     @MaxLength(20)
