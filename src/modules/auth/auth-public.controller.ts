@@ -13,6 +13,7 @@ import { ResetPasswordOtpDto } from "./dto/reset-password-otp.dto";
 import { SendOtpDto } from "./dto/send-otp.dto";
 import { VerifyOtpLoginDto } from "./dto/verify-otp-login.dto";
 import { Auth } from "./entities/auth.entity";
+import { RegisterRequestDto } from "./dto/register-request.dto";
 
 @Controller("auth")
 @ApiTags("auth")
@@ -89,5 +90,17 @@ export class AuthPublicController {
     })
     async resetPasswordOtp(@Body() dto: ResetPasswordOtpDto) {
         return this.authService.resetPasswordWithOtp(dto);
+    }
+
+    // controller đăng ký tài khoản
+    @ApiRecordResponse(LoginResponseDto)
+    @Post("register")
+    @ApiOperation({
+        summary: "Đăng ký tài khoảng mới",
+        description:
+            "Gửi email, password, name để tạo tài khoản mới. Trả về accessToken, refreshToken.",
+    })
+    async register(@Req() req: Request, @Body() dto: RegisterRequestDto) {
+        return this.authService.register(req, dto);
     }
 }

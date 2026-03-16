@@ -46,6 +46,8 @@ import { VerifyOtpLoginDto } from "./dto/verify-otp-login.dto";
 import { LoginRequestDto } from "./dto/login-request.dto";
 import { LoginResponseDto } from "./dto/login-response.dto";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
+import { RegisterRequestDto } from "./dto/register-request.dto";
+import { ErrorCode } from "@config/exception/error-code";
 
 interface FacebookProfile {
     id: string;
@@ -515,5 +517,43 @@ export class AuthService extends BaseService<Auth, AuthRepository> {
             userAgent: { x: 1 },
             $inc: { exp: -1, test: 1 },
         });
+    }
+
+    // service đăng ký tài khoản mới
+    async register(
+        req: Request,
+        dto: RegisterRequestDto,
+    ): Promise<LoginResponseDto> {
+        const username = dto.username.trim().toLowerCase();
+        const email = dto.email.trim().toLowerCase();
+        const existingUser = await this.userRepository.getOne(
+            {
+                $or: [{ username }, { email }],
+            },
+            { enableDataPartition: false },
+        );
+        if (existingUser) {
+            throw ApiError.BadRequest("error-user-exists" as ErrorCode);
+        }
+        const hashedPassword = await createUserPassword(dto.password);
+        const user = await this.userRepository.create({
+            username,
+            email,
+            password: hashedPassword,
+            firstname: dto.firstname,
+            lastname: dto.lastname,
+            systemRole: SystemRole.USER,
+        });
+        const auth = await this.createEmptyAuth(user, {
+            ip: req.ip,
+            userAgent: req.headers["user-agent"],
+            origin: req.headers["origin"],
+            platform: dto.platform,
+        });
+        const { accessToken, refreshToken } = await this.generateTokens(
+            user,
+            auth,
+        );
+        return this.getLoginInfo(accessToken, refreshToken);
     }
 }
