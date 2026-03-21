@@ -38,18 +38,6 @@ export class CreateLearningPathDto {
     })
     name_vi: string;
 
-    @ApiProperty({ description: "Industry ID", required: false })
-    @IsString()
-    @IsOptional()
-    @EntityDefinition.field({ label: "Industry ID" })
-    industry_id?: string;
-
-    @ApiProperty({ description: "Certification ID", required: false })
-    @IsString()
-    @IsOptional()
-    @EntityDefinition.field({ label: "Certification ID" })
-    certification_id?: string;
-
     @ApiProperty({
         description: "Mức độ mục tiêu (beginner, intermediate, advanced)",
         maxLength: 20,

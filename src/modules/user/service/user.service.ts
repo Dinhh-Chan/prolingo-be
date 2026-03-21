@@ -18,6 +18,7 @@ import { SystemRole } from "../common/constant";
 import { ChangePasswordDto } from "../dto/change-password.dto";
 import { User } from "../entities/user.entity";
 import { SqlTransaction } from "@module/repository/sequelize/sql.transaction";
+import { SurveyService } from "@module/survey/services/survey.service";
 
 @Injectable()
 export class UserService
@@ -31,6 +32,7 @@ export class UserService
         private readonly configService: ConfigService<Configuration>,
         @InjectTransaction()
         private readonly userTransaction: BaseTransaction,
+        private readonly surveyService: SurveyService,
     ) {
         super(userRepository, {
             notFoundCode: "error-user-not-found",
@@ -70,7 +72,11 @@ export class UserService
 
     async getMe(authData: RequestAuthData) {
         const user = await authData.getUser();
-        return user;
+
+        // Kiểm tra xem user đã có bản ghi survey nào trong bảng surveys hay chưa
+        const isSurvey = await this.surveyService.hasAnySurvey(user);
+
+        return Object.assign({}, user, { isSurvey });
     }
 
     async create(user: User, dto: CreateUserDto): Promise<User> {

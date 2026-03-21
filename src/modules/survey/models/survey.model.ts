@@ -1,45 +1,29 @@
 import { StrObjectId } from "@common/constant";
 import { Column, DataType, Model, Table } from "sequelize-typescript";
-import { UserProfile } from "../entities/user-profile.entity";
+import { Survey } from "../entities/survey.entity";
 
 @Table({
-    tableName: "user_profiles",
+    tableName: "surveys",
     timestamps: true,
-    createdAt: false,
+    createdAt: "created_at",
     updatedAt: "updated_at",
 })
-export class UserProfileModel extends Model implements UserProfile {
+export class SurveyModel extends Model implements Survey {
     @StrObjectId()
     @Column({
         type: DataType.UUID,
         primaryKey: true,
         defaultValue: DataType.UUIDV4,
-        field: "profile_id",
+        field: "survey_id",
     })
     _id: string;
 
-    /** user_id: UUID (SQL user) hoặc ObjectId 24-char (MongoDB user) */
     @Column({
         type: DataType.STRING(64),
         allowNull: false,
-        unique: true,
         field: "user_id",
     })
     user_id: string;
-
-    @Column({
-        type: DataType.STRING(64),
-        allowNull: true,
-        field: "industry_id",
-    })
-    industry_id?: string;
-
-    @Column({
-        type: DataType.STRING(64),
-        allowNull: true,
-        field: "role_id",
-    })
-    role_id?: string;
 
     @Column({
         type: DataType.STRING(50),
@@ -47,6 +31,20 @@ export class UserProfileModel extends Model implements UserProfile {
         field: "current_status",
     })
     current_status?: string;
+
+    @Column({
+        type: DataType.STRING(64),
+        allowNull: true,
+        field: "industry_name",
+    })
+    industry_name?: string;
+
+    @Column({
+        type: DataType.STRING(64),
+        allowNull: true,
+        field: "role_id",
+    })
+    role_id?: string;
 
     @Column({
         type: DataType.STRING(20),
@@ -63,6 +61,20 @@ export class UserProfileModel extends Model implements UserProfile {
     daily_learning_minutes?: number;
 
     @Column({
+        type: DataType.BOOLEAN,
+        allowNull: true,
+        field: "daily_reminder_enabled",
+    })
+    daily_reminder_enabled?: boolean;
+
+    @Column({
+        type: DataType.STRING(10),
+        allowNull: true,
+        field: "reminder_time",
+    })
+    reminder_time?: string;
+
+    @Column({
         type: DataType.TEXT,
         allowNull: true,
         field: "custom_focus",
@@ -70,11 +82,26 @@ export class UserProfileModel extends Model implements UserProfile {
     custom_focus?: string;
 
     @Column({
+        type: DataType.TEXT,
+        allowNull: true,
+        field: "custom_focus_2",
+    })
+    custom_focus_2?: string;
+
+    @Column({
         type: DataType.INTEGER,
         allowNull: true,
         field: "course_duration_weeks",
     })
     course_duration_weeks?: number;
+
+    @Column({
+        type: DataType.DATE,
+        allowNull: false,
+        defaultValue: DataType.NOW,
+        field: "created_at",
+    })
+    createdAt?: Date;
 
     @Column({
         type: DataType.DATE,

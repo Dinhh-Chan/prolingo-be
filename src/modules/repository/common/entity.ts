@@ -62,3 +62,4 @@ export const USER_VOCABULARY_STAT = "UserVocabularyStat";
 export const USER_SKILL_STAT = "UserSkillStat";
 export const USER_DAILY_ACTIVITY = "UserDailyActivity";
 export const USER_STREAK = "UserStreak";
+export const SURVEY = "Survey";

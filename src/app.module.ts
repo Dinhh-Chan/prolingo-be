@@ -17,8 +17,6 @@ import { SettingModule } from "./modules/setting/setting.module";
 import { TopicModule } from "./modules/topic/topic.module";
 import { UserModule } from "./modules/user/user.module";
 import { CertificationModule } from "./modules/certification/certification.module";
-import { UserProfileModule } from "./modules/user-profile/user-profile.module";
-import { UserGoalModule } from "./modules/user-goal/user-goal.module";
 import { PlacementTestModule } from "./modules/placement-test/placement-test.module";
 import { VocabularyModule } from "./modules/vocabulary/vocabulary.module";
 import { ExampleSentenceModule } from "./modules/example-sentence/example-sentence.module";
@@ -36,7 +34,6 @@ import { LessonExerciseModule } from "./modules/lesson-exercise/lesson-exercise.
 import { UserExerciseAttemptModule } from "./modules/user-exercise-attempt/user-exercise-attempt.module";
 import { UserVocabularyStatModule } from "./modules/user-vocabulary-stat/user-vocabulary-stat.module";
 import { UserDailyActivityModule } from "./modules/user-daily-activity/user-daily-activity.module";
-import { UserStreakModule } from "./modules/user-streak/user-streak.module";
 import { UsersModule } from "./modules/users/users.module";
 import { SurveyModule } from "./modules/survey/survey.module";
 
@@ -60,8 +57,6 @@ import { SurveyModule } from "./modules/survey/survey.module";
         DataPartitionModule,
         CommonProviderModule,
         CertificationModule,
-        UserProfileModule,
-        UserGoalModule,
         PlacementTestModule,
         VocabularyModule,
         ExampleSentenceModule,
@@ -79,7 +74,6 @@ import { SurveyModule } from "./modules/survey/survey.module";
         UserExerciseAttemptModule,
         UserVocabularyStatModule,
         UserDailyActivityModule,
-        UserStreakModule,
         UsersModule,
         SurveyModule,
     ],

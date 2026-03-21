@@ -23,11 +23,11 @@ export class SubmitSurveyDto {
     @IsIn(CURRENT_STATUS_VALUES)
     current_status?: string;
 
-    /** Select your field - industry_id (UUID) */
+    /** Select your field - industry_name (text) */
     @ApiPropertyOptional()
     @IsOptional()
     @IsString()
-    industry_id?: string;
+    industry_name?: string;
 
     /** Job role (optional) - role_id (UUID) */
     @ApiPropertyOptional()
@@ -69,6 +69,13 @@ export class SubmitSurveyDto {
     @IsOptional()
     @IsString()
     custom_focus?: string;
+
+    /** Personalize - mục tiêu/ưu tiên học thêm (optional) */
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsString()
+    @MaxLength(500)
+    custom_focus_2?: string;
 
     /** Personalize - thời lượng khóa (tuần): 2, 4, 8 */
     @ApiPropertyOptional({ enum: COURSE_WEEKS })

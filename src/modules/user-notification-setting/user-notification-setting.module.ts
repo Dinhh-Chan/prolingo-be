@@ -6,13 +6,9 @@ import { Entity } from "@module/repository";
 import { RepositoryProvider } from "@module/repository/common/repository";
 import { SequelizeModule } from "@nestjs/sequelize";
 import { UserNotificationSettingRepositorySql } from "./repository/user-notification-setting-repository.sql";
-import { UserModule } from "../user/user.module";
 
 @Module({
-    imports: [
-        SequelizeModule.forFeature([UserNotificationSettingModel]),
-        UserModule,
-    ],
+    imports: [SequelizeModule.forFeature([UserNotificationSettingModel])],
     controllers: [UserNotificationSettingController],
     providers: [
         UserNotificationSettingService,

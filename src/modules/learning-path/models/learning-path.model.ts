@@ -1,13 +1,6 @@
 import { StrObjectId } from "@common/constant";
-import {
-    Column,
-    DataType,
-    Model,
-    Table,
-    ForeignKey,
-} from "sequelize-typescript";
+import { Column, DataType, Model, Table } from "sequelize-typescript";
 import { LearningPath } from "../entities/learning-path.entity";
-import { CertificationModel } from "../../certification/models/certification.model";
 
 @Table({
     tableName: "learning_paths",
@@ -25,6 +18,13 @@ export class LearningPathModel extends Model implements LearningPath {
     _id: string;
 
     @Column({
+        type: DataType.STRING(64),
+        allowNull: true,
+        field: "user_id",
+    })
+    user_id?: string;
+
+    @Column({
         type: DataType.STRING(200),
         allowNull: false,
         field: "name_en",
@@ -37,21 +37,6 @@ export class LearningPathModel extends Model implements LearningPath {
         field: "name_vi",
     })
     name_vi: string;
-
-    @Column({
-        type: DataType.STRING(64),
-        allowNull: true,
-        field: "industry_id",
-    })
-    industry_id?: string;
-
-    @ForeignKey(() => CertificationModel)
-    @Column({
-        type: DataType.UUID,
-        allowNull: true,
-        field: "certification_id",
-    })
-    certification_id?: string;
 
     @Column({
         type: DataType.STRING(20),
