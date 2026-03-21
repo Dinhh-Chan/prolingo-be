@@ -1,0 +1,19 @@
+{
+    "success": true,
+    "data": {
+        "page": 1,
+        "skip": 0,
+        "limit": 5,
+        "total": 1,
+        "result": [
+            {
+                "_id": "69bdf7ddf3e8bc559c5fa9af",
+                "vocab_id": "69bdf7daf3e8bc559c5fa9ae",
+                "sentence_en": "The company's revenue increased by 20% last year.",
+                "sentence_vi": "Doanh thu của công ty đã tăng 20% trong năm ngoái.",
+                "context": null,
+                "audio_url": null
+            }
+        ]
+    }
+}

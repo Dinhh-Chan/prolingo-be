@@ -1,0 +1,110 @@
+Mẫu response API — luồng survey → generate 7 ngày → lesson-vocabulary / vocabulary / example-sentences
+================================================================================
+
+Các file JSON cùng thư mục là bản snapshot từ một lần chạy thực tế (localhost).
+
+Chạy lại và ghi đè toàn bộ mẫu (server phải đang chạy, ví dụ :3009):
+
+  ./scripts/save-api-flow-samples.sh
+
+Tuỳ chọn: BASE=http://localhost:3009 API_USER=admin API_PASS=admin ./scripts/save-api-flow-samples.sh
+
+Script tạo login.response.json (chứa JWT) — file này đã nằm trong .gitignore, không commit.
+
+Các file JSON khác (generate-schedule, lesson-vocabulary, vocabulary, example-sentences) có thể commit làm tài liệu mẫu.
+
+Lưu ý: không đưa Bearer token / .env lên git.
+
+
+--------------------------------------------------------------------------------
+FLOW APP (thứ tự API từ survey → hiển thị lộ trình → module → lesson → từ + câu mẫu)
+--------------------------------------------------------------------------------
+
+Tất cả bước từ khảo sát trở đi cần header:
+  Authorization: Bearer <accessToken>
+
+Các GET dạng danh sách dùng query chuẩn của backend:
+  - condition = chuỗi JSON (URL-encode), ví dụ: {"path_id":"..."}
+  - page, limit (và tuỳ chọn sort = chuỗi JSON, ví dụ: {"order_index":1})
+
+--- Giai đoạn 0: Vào app / đăng nhập ---
+  POST   /auth/login
+         Body JSON: username, password, platform (vd: "Web")
+         → Lưu data.accessToken cho các bước sau.
+
+--- Giai đoạn 1: Màn khảo sát (form) ---
+  GET    /survey/options
+         → Lấy danh sách lựa chọn hiển thị trên form (who are you, level, goal...).
+
+  POST   /survey
+         Body: SubmitSurveyDto (current_status, english_level, daily_learning_minutes, ...).
+         → Lưu profile khảo sát; user sẵn sàng bấm "Tạo lịch" / bước tiếp.
+
+--- Giai đoạn 2: Sinh lịch 7 ngày (một lần sau survey) ---
+  POST   /survey/generate-schedule-7days
+         → OpenAI sinh lịch; backend tạo learning_path, learning_module, 7 lessons,
+            vocabulary (+ TTS file), example_sentences, lesson_vocabulary.
+         → Response có path._id, module._id, lessons[]. _id, totalVocabulary.
+         App có thể đi thẳng vào path_id / module_id / lesson đầu tiên từ đây,
+         hoặc gọi lại API list bên dưới để đồng bộ UI.
+
+--- Giai đoạn 3: Màn "Learning path" (danh sách / chi tiết lộ trình) ---
+  GET    /learning-paths/page?condition={...}&page=1&limit=...
+         → Hiển thị các lộ trình (lọc theo nhu cầu, vd is_active trong condition nếu có).
+
+  GET    /learning-paths/:id
+         → Chi tiết một path (tên EN/VI, mô tả, level, giờ ước tính...).
+
+--- Giai đoạn 4: User chọn một MODULE trong path ---
+  GET    /learning-modules/page
+         Query: condition={"path_id":"<path_id từ path>"}
+                 sort={"order_index":1}
+                 page, limit
+         → Danh sách module (vd: "Week 1") theo thứ tự.
+
+  GET    /learning-modules/:id   (tuỳ UI có màn chi tiết module)
+
+--- Giai đoạn 5: User chọn một LESSON (ngày 1…7) ---
+  GET    /lessons/page
+         Query: condition={"module_id":"<module_id>"}
+                 sort={"order_index":1}
+                 page, limit
+         → Danh sách bài (Day 1 … Day 7).
+
+  GET    /lessons/:id
+         → Chi tiết bài: tên, lesson_type, estimated_minutes...
+
+--- Giai đoạn 6: Màn nội dung lesson — từ vựng + câu mẫu ---
+  GET    /lesson-vocabulary/page
+         Query: condition={"lesson_id":"<lesson_id>"}
+                 sort={"order_index":1}
+         → Danh sách vocab_id + thứ tự trong bài.
+
+  (Lặp theo từng dòng hoặc batch tuỳ FE)
+  GET    /vocabulary/:vocab_id
+         → Từ, domain, nghĩa, audio_url (đường dẫn tương đối kiểu /vocabulary/speaking/....mp3).
+
+  GET    /example-sentences/page
+         Query: condition={"vocab_id":"<vocab_id>"}
+         → Câu mẫu tiếng Anh + bản dịch tiếng Việt (sentence_en, sentence_vi).
+
+  GET    <BASE_URL><audio_url>
+         → Tải/phát file âm thanh TTS (cần server phục vụ static cho thư mục public).
+
+--- Giai đoạn 7 (tuỳ có bài tập gắn lesson — không phải lúc nào luồng 7 ngày cũng có) ---
+  GET    /lesson-exercises/page
+         Query: condition={"lesson_id":"<lesson_id>"}
+         → Liên kết lesson ↔ exercise; tiếp theo có thể GET /exercises/:id theo từng bài.
+
+--- Tóm tắt chuỗi tối thiểu cho luồng "survey → 7 ngày → học Day 1" ---
+  POST /auth/login
+  GET  /survey/options
+  POST /survey
+  POST /survey/generate-schedule-7days
+  GET  /learning-paths/page (hoặc dùng path._id từ bước trên)
+  GET  /learning-modules/page   (path_id)
+  GET  /lessons/page              (module_id)
+  GET  /lesson-vocabulary/page    (lesson_id)
+  GET  /vocabulary/:id            (từng vocab_id)
+  GET  /example-sentences/page    (từng vocab_id)
+  GET  <audio_url>                (phát âm)

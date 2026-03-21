@@ -1,6 +1,7 @@
 import { StrObjectId } from "@common/constant";
 import { Column, DataType, Model, Table } from "sequelize-typescript";
 import { Vocabulary } from "../entities/vocabulary.entity";
+import { VocabularyDomain } from "../common/vocabulary-domain.enum";
 
 @Table({
     tableName: "vocabulary",
@@ -23,6 +24,13 @@ export class VocabularyModel extends Model implements Vocabulary {
         allowNull: false,
     })
     word: string;
+
+    @Column({
+        type: DataType.STRING(50),
+        allowNull: true,
+        field: "domain",
+    })
+    domain?: VocabularyDomain;
 
     @Column({
         type: DataType.STRING(200),

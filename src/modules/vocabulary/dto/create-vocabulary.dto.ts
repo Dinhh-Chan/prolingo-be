@@ -1,6 +1,13 @@
-import { IsString, IsNotEmpty, IsOptional, MaxLength } from "class-validator";
+import {
+    IsEnum,
+    IsString,
+    IsNotEmpty,
+    IsOptional,
+    MaxLength,
+} from "class-validator";
 import { EntityDefinition } from "@common/constant/class/entity-definition";
 import { ApiProperty } from "@nestjs/swagger";
+import { VocabularyDomain } from "../common/vocabulary-domain.enum";
 
 export class CreateVocabularyDto {
     @ApiProperty({ description: "Từ vựng", maxLength: 200 })
@@ -9,6 +16,16 @@ export class CreateVocabularyDto {
     @MaxLength(200)
     @EntityDefinition.field({ label: "Từ vựng", required: true })
     word: string;
+
+    @ApiProperty({
+        description: "Lĩnh vực",
+        enum: VocabularyDomain,
+        required: false,
+    })
+    @IsEnum(VocabularyDomain)
+    @IsOptional()
+    @EntityDefinition.field({ label: "Lĩnh vực" })
+    domain?: VocabularyDomain;
 
     @ApiProperty({ description: "Phiên âm", maxLength: 200, required: false })
     @IsString()

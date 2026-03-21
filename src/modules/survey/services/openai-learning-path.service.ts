@@ -63,6 +63,7 @@ const SCHEDULE_7_DAYS_PROMPT = `You are an expert English learning path designer
           "definition_en": "string - English definition",
           "definition_vi": "string - Vietnamese definition",
           "difficulty_level": "string - e.g. A1, B2",
+          "domain": "string - one of: general, business, technology, science, medical, legal, marketing, finance, education",
           "usage_example_en": "string - one example sentence in English using the word",
           "usage_example_vi": "string - Vietnamese translation of the example sentence"
         }
@@ -72,7 +73,7 @@ const SCHEDULE_7_DAYS_PROMPT = `You are an expert English learning path designer
 }
 Rules:
 - Output exactly 7 days. Each day must have at least 3 and at most 8 vocabulary items.
-- Every vocabulary item must have: word, usage_example_en, usage_example_vi. Other fields can be empty string if not applicable.
+- Every vocabulary item must have: word, domain, usage_example_en, usage_example_vi. Other fields can be empty string if not applicable.
 - Match content to: user role, industry if given, English level, custom_focus.
 - Use only the keys above. Output nothing else but the JSON.`;
 
@@ -131,7 +132,7 @@ export class OpenAILearningPathService {
                     Authorization: `Bearer ${this.apiKey}`,
                     "Content-Type": "application/json",
                 },
-                timeout: 60000,
+                timeout: 180000,
             },
         );
 
@@ -190,7 +191,7 @@ export class OpenAILearningPathService {
                     Authorization: `Bearer ${this.apiKey}`,
                     "Content-Type": "application/json",
                 },
-                timeout: 60000,
+                timeout: 180000,
             },
         );
 
@@ -211,5 +212,44 @@ export class OpenAILearningPathService {
             );
         }
         return parsed;
+    }
+
+    async translateToVietnamese(text: string): Promise<string> {
+        if (!this.apiKey) {
+            throw new Error("OPENAI_API_KEY is not configured");
+        }
+
+        const response = await axios.post<{
+            choices?: Array<{ message?: { content?: string } }>;
+        }>(
+            `${this.baseURL}/chat/completions`,
+            {
+                model: "gpt-4o-mini",
+                messages: [
+                    {
+                        role: "system",
+                        content:
+                            "You are a professional English-to-Vietnamese translator. Translate accurately and naturally. Keep the meaning.",
+                    },
+                    {
+                        role: "user",
+                        content: `Translate this into Vietnamese:\n\n${text}`,
+                    },
+                ],
+                temperature: 0,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${this.apiKey}`,
+                    "Content-Type": "application/json",
+                },
+                timeout: 180000,
+            },
+        );
+
+        const content =
+            response.data?.choices?.[0]?.message?.content?.trim() ?? "";
+        // Tránh trường hợp model trả về câu trả lời kèm dấu ngoặc/quote
+        return content.replace(/^"|"$/g, "").trim();
     }
 }

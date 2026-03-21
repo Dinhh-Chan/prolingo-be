@@ -5,6 +5,9 @@
 # Logs
 logs
 *.log
+
+# Mẫu API: login chứa JWT — không commit
+docs/api-flow-samples/login.response.json
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*

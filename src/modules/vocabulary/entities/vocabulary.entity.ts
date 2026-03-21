@@ -1,7 +1,8 @@
 import { StrObjectId } from "@common/constant";
 import { EntityDefinition } from "@common/constant/class/entity-definition";
 import { BaseEntity } from "@common/interface/base-entity.interface";
-import { IsString, IsOptional, MaxLength } from "class-validator";
+import { IsEnum, IsOptional, IsString, MaxLength } from "class-validator";
+import { VocabularyDomain } from "../common/vocabulary-domain.enum";
 
 export class Vocabulary implements BaseEntity {
     @StrObjectId()
@@ -11,6 +12,11 @@ export class Vocabulary implements BaseEntity {
     @MaxLength(200)
     @EntityDefinition.field({ label: "Từ vựng", required: true })
     word: string;
+
+    @IsEnum(VocabularyDomain)
+    @IsOptional()
+    @EntityDefinition.field({ label: "Lĩnh vực" })
+    domain?: VocabularyDomain;
 
     @IsString()
     @MaxLength(200)

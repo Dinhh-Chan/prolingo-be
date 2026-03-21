@@ -1,0 +1,29 @@
+{
+    "success": true,
+    "data": {
+        "page": 1,
+        "skip": 0,
+        "limit": 20,
+        "total": 3,
+        "result": [
+            {
+                "_id": "cb91fb5fb2e6e5d17bd78f08",
+                "lesson_id": "69bdf7d4f3e8bc559c5fa9aa",
+                "vocab_id": "69bdf7daf3e8bc559c5fa9ae",
+                "order_index": 2
+            },
+            {
+                "_id": "b9fa596df063f955d47a421d",
+                "lesson_id": "69bdf7d4f3e8bc559c5fa9aa",
+                "vocab_id": "69bdf7ddf3e8bc559c5fa9b1",
+                "order_index": 3
+            },
+            {
+                "_id": "6e86544a41310d40002d750a",
+                "lesson_id": "69bdf7d4f3e8bc559c5fa9aa",
+                "vocab_id": "69bdf7d4f3e8bc559c5fa9ab",
+                "order_index": 1
+            }
+        ]
+    }
+}

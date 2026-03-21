@@ -1,0 +1,107 @@
+{
+    "success": true,
+    "data": {
+        "path": {
+            "_id": "69bdf7d4f3e8bc559c5fa9a8",
+            "createdAt": "2026-03-21T01:43:48.911Z",
+            "name_en": "7-Day Business English Vocabulary Builder",
+            "name_vi": "Lịch Học Từ Vựng Tiếng Anh Kinh Doanh 7 Ngày",
+            "description": "This 7-day schedule focuses on enhancing your business English vocabulary, tailored for B1 level students.",
+            "target_level": "beginner",
+            "estimated_hours": 2,
+            "industry_id": null,
+            "is_active": true,
+            "created_at": "2026-03-21T01:43:48.911Z",
+            "certification_id": null
+        },
+        "module": {
+            "_id": "69bdf7d4f3e8bc559c5fa9a9",
+            "createdAt": "2026-03-21T01:43:48.932Z",
+            "path_id": "69bdf7d4f3e8bc559c5fa9a8",
+            "name_en": "Week 1",
+            "name_vi": "Tuần 1",
+            "order_index": 1,
+            "created_at": "2026-03-21T01:43:48.932Z"
+        },
+        "lessons": [
+            {
+                "_id": "69bdf7d4f3e8bc559c5fa9aa",
+                "createdAt": "2026-03-21T01:43:48.941Z",
+                "module_id": "69bdf7d4f3e8bc559c5fa9a9",
+                "name_en": "Day 1",
+                "name_vi": "Ngày 1",
+                "order_index": 1,
+                "lesson_type": "vocabulary",
+                "estimated_minutes": 10,
+                "created_at": "2026-03-21T01:43:48.941Z"
+            },
+            {
+                "_id": "69bdf7e0f3e8bc559c5fa9b4",
+                "createdAt": "2026-03-21T01:44:00.835Z",
+                "module_id": "69bdf7d4f3e8bc559c5fa9a9",
+                "name_en": "Day 2",
+                "name_vi": "Ngày 2",
+                "order_index": 2,
+                "lesson_type": "vocabulary",
+                "estimated_minutes": 10,
+                "created_at": "2026-03-21T01:44:00.835Z"
+            },
+            {
+                "_id": "69bdf7e9f3e8bc559c5fa9be",
+                "createdAt": "2026-03-21T01:44:09.905Z",
+                "module_id": "69bdf7d4f3e8bc559c5fa9a9",
+                "name_en": "Day 3",
+                "name_vi": "Ngày 3",
+                "order_index": 3,
+                "lesson_type": "vocabulary",
+                "estimated_minutes": 10,
+                "created_at": "2026-03-21T01:44:09.905Z"
+            },
+            {
+                "_id": "69bdf7f2f3e8bc559c5fa9c8",
+                "createdAt": "2026-03-21T01:44:18.732Z",
+                "module_id": "69bdf7d4f3e8bc559c5fa9a9",
+                "name_en": "Day 4",
+                "name_vi": "Ngày 4",
+                "order_index": 4,
+                "lesson_type": "vocabulary",
+                "estimated_minutes": 10,
+                "created_at": "2026-03-21T01:44:18.732Z"
+            },
+            {
+                "_id": "69bdf7faf3e8bc559c5fa9d2",
+                "createdAt": "2026-03-21T01:44:26.870Z",
+                "module_id": "69bdf7d4f3e8bc559c5fa9a9",
+                "name_en": "Day 5",
+                "name_vi": "Ngày 5",
+                "order_index": 5,
+                "lesson_type": "vocabulary",
+                "estimated_minutes": 10,
+                "created_at": "2026-03-21T01:44:26.870Z"
+            },
+            {
+                "_id": "69bdf805f3e8bc559c5fa9dc",
+                "createdAt": "2026-03-21T01:44:37.637Z",
+                "module_id": "69bdf7d4f3e8bc559c5fa9a9",
+                "name_en": "Day 6",
+                "name_vi": "Ngày 6",
+                "order_index": 6,
+                "lesson_type": "vocabulary",
+                "estimated_minutes": 10,
+                "created_at": "2026-03-21T01:44:37.637Z"
+            },
+            {
+                "_id": "69bdf810f3e8bc559c5fa9e6",
+                "createdAt": "2026-03-21T01:44:48.249Z",
+                "module_id": "69bdf7d4f3e8bc559c5fa9a9",
+                "name_en": "Day 7",
+                "name_vi": "Ngày 7",
+                "order_index": 7,
+                "lesson_type": "vocabulary",
+                "estimated_minutes": 10,
+                "created_at": "2026-03-21T01:44:48.249Z"
+            }
+        ],
+        "totalVocabulary": 21
+    }
+}

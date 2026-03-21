@@ -1,3 +1,5 @@
+import { VocabularyDomain } from "@module/vocabulary/common/vocabulary-domain.enum";
+
 /** Cấu trúc bài học do OpenAI sinh (1 tuần ~ 1 module) */
 export interface GeneratedLesson {
     name_en: string;
@@ -33,6 +35,7 @@ export interface GeneratedDayVocab {
     definition_en?: string;
     definition_vi?: string;
     difficulty_level?: string;
+    domain?: VocabularyDomain;
     usage_example_en: string;
     usage_example_vi: string;
 }
