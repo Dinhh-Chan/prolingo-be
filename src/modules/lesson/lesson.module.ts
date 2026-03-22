@@ -7,9 +7,18 @@ import { RepositoryProvider } from "@module/repository/common/repository";
 import { SequelizeModule } from "@nestjs/sequelize";
 import { LessonRepositorySql } from "./repository/lesson-repository.sql";
 import { LearningModuleModule } from "../learning-module/learning-module.module";
+import { LessonVocabularyModule } from "../lesson-vocabulary/lesson-vocabulary.module";
+import { VocabularyModule } from "../vocabulary/vocabulary.module";
+import { ExampleSentenceModule } from "../example-sentence/example-sentence.module";
 
 @Module({
-    imports: [SequelizeModule.forFeature([LessonModel]), LearningModuleModule],
+    imports: [
+        SequelizeModule.forFeature([LessonModel]),
+        LearningModuleModule,
+        LessonVocabularyModule,
+        VocabularyModule,
+        ExampleSentenceModule,
+    ],
     controllers: [LessonController],
     providers: [
         LessonService,

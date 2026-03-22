@@ -6,13 +6,11 @@ import { Entity } from "@module/repository";
 import { RepositoryProvider } from "@module/repository/common/repository";
 import { SequelizeModule } from "@nestjs/sequelize";
 import { LessonVocabularyRepositorySql } from "./repository/lesson-vocabulary-repository.sql";
-import { LessonModule } from "../lesson/lesson.module";
 import { VocabularyModule } from "../vocabulary/vocabulary.module";
 
 @Module({
     imports: [
         SequelizeModule.forFeature([LessonVocabularyModel]),
-        LessonModule,
         VocabularyModule,
     ],
     controllers: [LessonVocabularyController],

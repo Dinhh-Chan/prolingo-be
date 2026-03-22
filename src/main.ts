@@ -13,6 +13,7 @@ import {
     SwaggerModule,
 } from "@nestjs/swagger";
 import { json, urlencoded } from "body-parser";
+import { join } from "path";
 import { I18nMiddleware } from "nestjs-i18n";
 import "reflect-metadata";
 import { AppModule } from "./app.module";
@@ -165,6 +166,11 @@ async function bootstrap() {
 
     app.use(json({ limit: "50mb" }));
     app.use(urlencoded({ limit: "50mb", extended: true }));
+
+    /** Phục vụ file tĩnh: public/vocabulary/speaking/*.mp3, public/avatar_user/..., v.v. */
+    app.useStaticAssets(join(process.cwd(), "public"), {
+        index: false,
+    });
 
     const protoConfig = getServerGrpcConfig();
 
