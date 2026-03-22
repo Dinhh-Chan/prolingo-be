@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import axios from "axios";
 import { randomBytes } from "crypto";
 import { User } from "@module/user/entities/user.entity";
@@ -23,7 +23,7 @@ import { LearningModule } from "@module/learning-module/entities/learning-module
 import { Lesson } from "@module/lesson/entities/lesson.entity";
 import { Vocabulary } from "@module/vocabulary/entities/vocabulary.entity";
 import { ExampleSentence } from "@module/example-sentence/entities/example-sentence.entity";
-import { VocabularyDomain } from "@module/vocabulary/common/vocabulary-domain.enum";
+import { parseVocabularyDomain } from "@module/vocabulary/common/vocabulary-domain.enum";
 import { BadRequestException } from "@nestjs/common";
 import { InjectRepository } from "@module/repository/common/repository";
 import { Entity } from "@module/repository";
@@ -34,6 +34,8 @@ const GENERATE_SENTENCE_URL =
 
 @Injectable()
 export class SurveyService {
+    private readonly logger = new Logger(SurveyService.name);
+
     constructor(
         @InjectRepository(Entity.SURVEY)
         private readonly surveyRepository: SurveyRepository,
@@ -259,8 +261,10 @@ export class SurveyService {
                 const v = day.vocabulary[i];
                 // create() đã tự kiểm tra tồn tại theo (word, domain) và chỉ gọi TTS khi cần.
                 const vocab = await this.vocabularyService.create(user, {
-                    word: v.word ?? "",
-                    domain: v.domain ?? VocabularyDomain.GENERAL,
+                    word: (v.word ?? "").trim(),
+                    domain: parseVocabularyDomain(
+                        v.domain as string | undefined,
+                    ),
                     phonetic: v.phonetic ?? undefined,
                     part_of_speech: v.part_of_speech ?? undefined,
                     definition_en: v.definition_en ?? undefined,
@@ -271,32 +275,56 @@ export class SurveyService {
                 } as Partial<Vocabulary>);
 
                 // Sinh câu ví dụ theo API (usage example) + dịch nghĩa sang tiếng Việt.
-                const sentenceResp = await axios.post(
-                    GENERATE_SENTENCE_URL,
-                    { vocabulary: v.word ?? vocab.word },
-                    {
-                        headers: {
-                            accept: "application/json",
-                            "Content-Type": "application/json",
+                let sentence_en_raw = "";
+                try {
+                    const sentenceResp = await axios.post(
+                        GENERATE_SENTENCE_URL,
+                        { vocabulary: vocab.word },
+                        {
+                            headers: {
+                                accept: "application/json",
+                                "Content-Type": "application/json",
+                            },
+                            timeout: 60000,
                         },
-                        timeout: 60000,
-                    },
-                );
-
-                const sentence_en_raw =
-                    sentenceResp.data?.data?.sentence ??
-                    sentenceResp.data?.data?.sentence ??
-                    v.usage_example_en ??
-                    "";
+                    );
+                    sentence_en_raw =
+                        sentenceResp.data?.data?.sentence ??
+                        sentenceResp.data?.sentence ??
+                        "";
+                } catch (err) {
+                    this.logger.warn(
+                        `generate-sentence API failed for "${vocab.word}": ${(err as Error).message}`,
+                    );
+                }
 
                 const sentence_en =
                     sentence_en_raw ||
+                    (v.usage_example_en && String(v.usage_example_en).trim()) ||
                     `I will use "${vocab.word}" in a natural sentence.`;
 
-                const sentence_vi =
-                    await this.openAILearningPathService.translateToVietnamese(
-                        sentence_en,
+                let sentence_vi = "";
+                try {
+                    if (
+                        v.usage_example_vi &&
+                        String(v.usage_example_vi).trim()
+                    ) {
+                        sentence_vi = String(v.usage_example_vi).trim();
+                    } else {
+                        sentence_vi =
+                            await this.openAILearningPathService.translateToVietnamese(
+                                sentence_en,
+                            );
+                    }
+                } catch (err) {
+                    this.logger.warn(
+                        `translate failed for "${vocab.word}": ${(err as Error).message}`,
                     );
+                    sentence_vi =
+                        (v.usage_example_vi &&
+                            String(v.usage_example_vi).trim()) ||
+                        sentence_en;
+                }
 
                 await this.exampleSentenceService.create(user, {
                     vocab_id: vocab._id,
