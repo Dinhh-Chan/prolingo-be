@@ -9,6 +9,7 @@ import { LessonService } from "@module/lesson/services/lesson.service";
 import { VocabularyService } from "@module/vocabulary/services/vocabulary.service";
 import { ExampleSentenceService } from "@module/example-sentence/services/example-sentence.service";
 import { LessonVocabularyService } from "@module/lesson-vocabulary/services/lesson-vocabulary.service";
+import { ExerciseService } from "@module/exercise/services/exercise.service";
 import {
     SURVEY_CURRENT_STATUS_OPTIONS,
     SURVEY_ENGLISH_LEVEL_OPTIONS,
@@ -44,6 +45,7 @@ export class SurveyService {
         private readonly vocabularyService: VocabularyService,
         private readonly exampleSentenceService: ExampleSentenceService,
         private readonly lessonVocabularyService: LessonVocabularyService,
+        private readonly exerciseService: ExerciseService,
         private readonly openAILearningPathService: OpenAILearningPathService,
     ) {}
 
@@ -255,6 +257,8 @@ export class SurveyService {
             } as Partial<Lesson>);
             createdLessons.push(lesson);
 
+            const lessonVocabularies: Vocabulary[] = [];
+
             for (let i = 0; i < (day.vocabulary?.length ?? 0); i++) {
                 const v = day.vocabulary[i];
                 // create() đã tự kiểm tra tồn tại theo (word, domain) và chỉ gọi TTS khi cần.
@@ -269,6 +273,8 @@ export class SurveyService {
                     audio_url: undefined,
                     image_url: undefined,
                 } as Partial<Vocabulary>);
+
+                lessonVocabularies.push(vocab);
 
                 // Sinh câu ví dụ theo API (usage example) + dịch nghĩa sang tiếng Việt.
                 const sentenceResp = await axios.post(
@@ -312,6 +318,15 @@ export class SurveyService {
                     order_index: i + 1,
                 } as any);
                 totalVocabulary += 1;
+            }
+
+            // Tạo bài tập matching nối từ với nghĩa
+            if (lessonVocabularies.length > 0) {
+                await this.exerciseService.createMatchingExercise(
+                    user,
+                    lesson._id,
+                    lessonVocabularies,
+                );
             }
         }
 
