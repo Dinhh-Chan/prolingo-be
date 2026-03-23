@@ -39,7 +39,7 @@ export class UserVocabularyProgressModel
     @Unique("user_vocab_unique")
     @ForeignKey(() => UserModel)
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         allowNull: false,
         field: "user_id",
     })
@@ -48,7 +48,7 @@ export class UserVocabularyProgressModel
     @Unique("user_vocab_unique")
     @ForeignKey(() => VocabularyModel)
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         allowNull: false,
         field: "vocab_id",
     })
