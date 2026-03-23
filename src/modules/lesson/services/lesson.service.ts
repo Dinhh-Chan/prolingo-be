@@ -10,6 +10,7 @@ import { BaseQueryOption } from "@module/repository/common/base-repository.inter
 import { LessonVocabularyService } from "@module/lesson-vocabulary/services/lesson-vocabulary.service";
 import { VocabularyService } from "@module/vocabulary/services/vocabulary.service";
 import { ExampleSentenceService } from "@module/example-sentence/services/example-sentence.service";
+import { UserVocabularyProgressService } from "@module/user-vocabulary-progress/services/user-vocabulary-progress.service";
 import {
     LessonVocabularyItem,
     LessonWithVocabulary,
@@ -23,6 +24,7 @@ export class LessonService extends BaseService<Lesson, LessonRepository> {
         private readonly lessonVocabularyService: LessonVocabularyService,
         private readonly vocabularyService: VocabularyService,
         private readonly exampleSentenceService: ExampleSentenceService,
+        private readonly userVocabularyProgressService: UserVocabularyProgressService,
     ) {
         super(lessonRepository, {
             notFoundCode: "error-lesson-not-found",
@@ -47,6 +49,13 @@ export class LessonService extends BaseService<Lesson, LessonRepository> {
             } as any,
         );
 
+        const vocabIds = links.map((l) => l.vocab_id).filter(Boolean);
+        const flashMap =
+            await this.userVocabularyProgressService.getFlashcardStateMap(
+                user,
+                vocabIds,
+            );
+
         const vocabulary: LessonVocabularyItem[] = [];
         for (const link of links) {
             const vocab = await this.vocabularyService.getById(
@@ -66,6 +75,7 @@ export class LessonService extends BaseService<Lesson, LessonRepository> {
                 } as any,
             );
             const firstSentence = example_sentences[0];
+            const flash = flashMap.get(link.vocab_id);
             vocabulary.push({
                 order_index: link.order_index,
                 lesson_vocabulary_id: link._id,
@@ -73,6 +83,9 @@ export class LessonService extends BaseService<Lesson, LessonRepository> {
                 sentence_en: firstSentence?.sentence_en,
                 sentence_vi: firstSentence?.sentence_vi,
                 sentence_audio_url: firstSentence?.audio_url,
+                flashcard_remembered_count:
+                    flash?.flashcard_remembered_count ?? 0,
+                is_remembered: flash?.is_remembered ?? false,
                 example_audio_urls: example_sentences
                     .map((item) => item.audio_url)
                     .filter((url): url is string => Boolean(url)),

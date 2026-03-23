@@ -10,6 +10,7 @@ import { LearningModuleModule } from "../learning-module/learning-module.module"
 import { LessonVocabularyModule } from "../lesson-vocabulary/lesson-vocabulary.module";
 import { VocabularyModule } from "../vocabulary/vocabulary.module";
 import { ExampleSentenceModule } from "../example-sentence/example-sentence.module";
+import { UserVocabularyProgressModule } from "../user-vocabulary-progress/user-vocabulary-progress.module";
 
 @Module({
     imports: [
@@ -18,6 +19,7 @@ import { ExampleSentenceModule } from "../example-sentence/example-sentence.modu
         LessonVocabularyModule,
         VocabularyModule,
         ExampleSentenceModule,
+        UserVocabularyProgressModule,
     ],
     controllers: [LessonController],
     providers: [

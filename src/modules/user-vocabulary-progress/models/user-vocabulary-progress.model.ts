@@ -93,6 +93,14 @@ export class UserVocabularyProgressModel
     is_mastered?: boolean;
 
     @Column({
+        type: DataType.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+        field: "flashcard_remembered_count",
+    })
+    flashcard_remembered_count?: number;
+
+    @Column({
         type: DataType.DATE,
         allowNull: false,
         defaultValue: DataType.NOW,

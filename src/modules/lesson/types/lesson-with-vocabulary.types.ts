@@ -14,6 +14,10 @@ export interface LessonVocabularyItem {
     sentence_audio_url?: string;
     /** Audio trên các câu ví dụ nếu có. */
     example_audio_urls?: string[];
+    /** Số lần swipe "đã nhớ" (tối đa theo ngưỡng backend). */
+    flashcard_remembered_count?: number;
+    /** true khi đủ ngưỡng (mặc định 5 lần đã nhớ). */
+    is_remembered?: boolean;
     vocabulary: Vocabulary;
     example_sentences: ExampleSentence[];
 }

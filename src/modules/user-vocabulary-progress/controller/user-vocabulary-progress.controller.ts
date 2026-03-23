@@ -3,10 +3,24 @@ import { UserVocabularyProgressService } from "../services/user-vocabulary-progr
 import { UserVocabularyProgress } from "../entities/user-vocabulary-progress.entity";
 import { CreateUserVocabularyProgressDto } from "../dto/create-user-vocabulary-progress.dto";
 import { UpdateUserVocabularyProgressDto } from "../dto/update-user-vocabulary-progress.dto";
-import { Controller } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
+import { Body, Controller, Post, UsePipes } from "@nestjs/common";
+import { ApiTags, ApiOperation } from "@nestjs/swagger";
 import { ConditionUserVocabularyProgressDto } from "../dto/condition-user-vocabulary-progress.dto";
 import { SystemRole } from "@module/user/common/constant";
+import { AllowSystemRoles, ReqUser } from "@common/decorator/auth.decorator";
+import { User } from "@module/user/entities/user.entity";
+import { FlashcardSwipeDto } from "../dto/flashcard-swipe.dto";
+import { FlashcardResetLessonDto } from "../dto/flashcard-reset-lesson.dto";
+import { AbstractValidationPipe } from "@common/pipe/abstract-validation.pipe";
+
+const flashcardSwipePipe = new AbstractValidationPipe(
+    { whitelist: true },
+    { body: FlashcardSwipeDto },
+);
+const flashcardResetPipe = new AbstractValidationPipe(
+    { whitelist: true },
+    { body: FlashcardResetLessonDto },
+);
 
 @Controller("user-vocabulary-progress")
 @ApiTags("UserVocabularyProgress")
@@ -31,5 +45,41 @@ export class UserVocabularyProgressController extends BaseControllerFactory<User
         private readonly userVocabularyProgressService: UserVocabularyProgressService,
     ) {
         super(userVocabularyProgressService);
+    }
+
+    @Post("flashcard/swipe")
+    @AllowSystemRoles(SystemRole.USER, SystemRole.ADMIN, SystemRole.STUDENT)
+    @ApiOperation({
+        summary: "Ghi nhận swipe flashcard (đã nhớ / chưa nhớ)",
+        description:
+            "Đã nhớ: +1 flashcard_remembered_count (tối đa ngưỡng). Chưa nhớ: reset count về 0. is_remembered = true khi count đủ ngưỡng.",
+    })
+    @UsePipes(flashcardSwipePipe)
+    async flashcardSwipe(
+        @ReqUser() user: User,
+        @Body() dto: FlashcardSwipeDto,
+    ) {
+        return this.userVocabularyProgressService.recordFlashcardSwipe(
+            user,
+            dto,
+        );
+    }
+
+    @Post("flashcard/reset-lesson")
+    @AllowSystemRoles(SystemRole.USER, SystemRole.ADMIN, SystemRole.STUDENT)
+    @ApiOperation({
+        summary: "Reset flashcard cho mọi từ trong một lesson",
+        description:
+            "Đặt flashcard_remembered_count = 0, is_mastered = false cho các progress tồn tại.",
+    })
+    @UsePipes(flashcardResetPipe)
+    async flashcardResetLesson(
+        @ReqUser() user: User,
+        @Body() dto: FlashcardResetLessonDto,
+    ) {
+        return this.userVocabularyProgressService.resetFlashcardForLesson(
+            user,
+            dto.lesson_id,
+        );
     }
 }

@@ -40,6 +40,13 @@ export class UserVocabularyProgress implements BaseEntity {
     @EntityDefinition.field({ label: "Đã thành thạo" })
     is_mastered?: boolean;
 
+    @IsNumber()
+    @IsOptional()
+    @EntityDefinition.field({
+        label: "Số lần swipe đã nhớ (flashcard), đủ ngưỡng = đã nhớ",
+    })
+    flashcard_remembered_count?: number;
+
     createdAt?: Date;
     updatedAt?: Date;
 }
