@@ -291,7 +291,7 @@ export class SurveyService {
                                 accept: "application/json",
                                 "Content-Type": "application/json",
                             },
-                            timeout: 60000,
+                            timeout: 360000,
                         },
                     );
                     sentence_en_raw =

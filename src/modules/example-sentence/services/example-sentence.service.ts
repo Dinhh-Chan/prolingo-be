@@ -47,7 +47,7 @@ export class ExampleSentenceService extends BaseService<
                     "Content-Type": "application/json",
                 },
                 responseType: "arraybuffer",
-                timeout: 60000,
+                timeout: 360000,
             },
         );
 

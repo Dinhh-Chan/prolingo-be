@@ -274,7 +274,7 @@ export class OpenAILearningPathService {
                     Authorization: `Bearer ${this.apiKey}`,
                     "Content-Type": "application/json",
                 },
-                timeout: 180000,
+                timeout: 360000,
             },
         );
 
@@ -336,7 +336,7 @@ export class OpenAILearningPathService {
                     Authorization: `Bearer ${this.apiKey}`,
                     "Content-Type": "application/json",
                 },
-                timeout: 180000,
+                timeout: 360000,
             },
         );
 
@@ -386,7 +386,7 @@ export class OpenAILearningPathService {
                     Authorization: `Bearer ${this.apiKey}`,
                     "Content-Type": "application/json",
                 },
-                timeout: 180000,
+                timeout: 360000,
             },
         );
 
