@@ -65,9 +65,17 @@ export class LessonService extends BaseService<Lesson, LessonRepository> {
                     enableDataPartition: false,
                 } as any,
             );
+            const firstSentence = example_sentences[0];
             vocabulary.push({
                 order_index: link.order_index,
                 lesson_vocabulary_id: link._id,
+                audio_url: vocab.audio_url,
+                sentence_en: firstSentence?.sentence_en,
+                sentence_vi: firstSentence?.sentence_vi,
+                sentence_audio_url: firstSentence?.audio_url,
+                example_audio_urls: example_sentences
+                    .map((item) => item.audio_url)
+                    .filter((url): url is string => Boolean(url)),
                 vocabulary: vocab,
                 example_sentences,
             });
