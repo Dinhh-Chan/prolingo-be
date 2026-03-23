@@ -1,4 +1,11 @@
-import { Controller, Get, Post, Body, UsePipes } from "@nestjs/common";
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    UsePipes,
+    HttpCode,
+} from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { Authorization, ReqUser } from "@common/decorator/auth.decorator";
 import { User } from "@module/user/entities/user.entity";
@@ -68,5 +75,20 @@ export class SurveyController {
     })
     async generateSchedule7Days(@ReqUser() user: User) {
         return this.surveyService.generateSchedule7DaysFromSurvey(user);
+    }
+
+    @Post("generate-schedule-7days/async")
+    @HttpCode(202)
+    @ApiOperation({
+        summary: "Khởi tạo lịch học 7 ngày (async) từ khảo sát",
+        description:
+            "Tránh timeout gateway: tạo skeleton path/module/7 lessons ngay và chạy phần sinh nặng (OpenAI + TTS + example + exercises) ở background. FE/poll sẽ gọi các API GET để lấy dữ liệu khi sẵn sàng.",
+    })
+    @ApiResponse({
+        status: 202,
+        description: "Đã khởi tạo và đang xử lý (202 Accepted).",
+    })
+    async generateSchedule7DaysAsync(@ReqUser() user: User) {
+        return this.surveyService.startGenerateSchedule7DaysFromSurvey(user);
     }
 }

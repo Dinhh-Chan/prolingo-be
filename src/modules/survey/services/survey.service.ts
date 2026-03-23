@@ -420,4 +420,315 @@ export class SurveyService {
             totalVocabulary,
         };
     }
+
+    /**
+     * Khởi tạo skeleton nhanh để tránh timeout gateway (Cloudflare 504).
+     * Sau khi trả response 202, phần sinh nặng (OpenAI + TTS + example + exercises)
+     * chạy ở background để FE/poll tự lấy dữ liệu dần qua các API GET.
+     */
+    async startGenerateSchedule7DaysFromSurvey(user: User): Promise<{
+        status: "processing";
+        pathId: string;
+        moduleId: string;
+        lessonIds: string[];
+    }> {
+        if (!this.openAILearningPathService.isConfigured()) {
+            throw new BadRequestException(
+                "OPENAI_API_KEY is not configured. Cannot generate schedule.",
+            );
+        }
+
+        const latestSurvey = await this.surveyRepository.getOne(
+            { user_id: user._id } as any,
+            {
+                sort: { created_at: -1 } as any,
+                enableDataPartition: false,
+            } as any,
+        );
+        if (!latestSurvey) {
+            throw new BadRequestException(
+                "User has not completed survey. Please submit survey first.",
+            );
+        }
+
+        const context = {
+            current_status: latestSurvey.current_status,
+            industry_name: latestSurvey.industry_name,
+            english_level: latestSurvey.english_level,
+            daily_learning_minutes: latestSurvey.daily_learning_minutes,
+            custom_focus: latestSurvey.custom_focus,
+            custom_focus_2: latestSurvey.custom_focus_2,
+            course_duration_weeks: latestSurvey.course_duration_weeks ?? 4,
+        };
+
+        // 1) Tạo skeleton ngay (tránh chờ OpenAI/TTS tới khi trả response)
+        const path = await this.learningPathService.create(user, {
+            user_id: user._id,
+            name_en: "7-Day English Vocabulary Schedule",
+            name_vi: "Lịch Học Từ Vựng Tiếng Anh 7 Ngày",
+            description: context.custom_focus || undefined,
+            target_level: "beginner",
+            estimated_hours: Math.ceil(
+                (7 * (latestSurvey.daily_learning_minutes ?? 15)) / 60,
+            ),
+            is_active: true,
+        } as Partial<LearningPath>);
+
+        const createdModule = await this.learningModuleService.create(user, {
+            path_id: path._id,
+            name_en: "Week 1",
+            name_vi: "Tuần 1",
+            order_index: 1,
+        } as Partial<LearningModule>);
+
+        const createdLessons: Lesson[] = [];
+        for (let dayIndex = 1; dayIndex <= 7; dayIndex++) {
+            const lesson = await this.lessonService.create(user, {
+                module_id: createdModule._id,
+                name_en: `Day ${dayIndex}`,
+                name_vi: `Ngày ${dayIndex}`,
+                order_index: dayIndex,
+                lesson_type: "vocabulary",
+                estimated_minutes: latestSurvey.daily_learning_minutes ?? 15,
+            } as Partial<Lesson>);
+            createdLessons.push(lesson);
+        }
+
+        // 2) Chạy sinh nặng ở background
+        void this.generateSchedule7DaysContentInBackground(
+            user,
+            context,
+            path._id,
+            createdModule._id,
+            createdLessons,
+        );
+
+        return {
+            status: "processing",
+            pathId: path._id,
+            moduleId: createdModule._id,
+            lessonIds: createdLessons.map((l) => l._id),
+        };
+    }
+
+    private async generateSchedule7DaysContentInBackground(
+        user: User,
+        context: any,
+        pathId: string,
+        _moduleId: string,
+        lessons: Lesson[],
+    ) {
+        try {
+            const payload =
+                await this.openAILearningPathService.generateSchedule7Days(
+                    context,
+                );
+
+            // Update tên/mô tả theo OpenAI nếu có
+            if (payload?.name_en && payload?.name_vi) {
+                await this.learningPathService.updateById(
+                    user,
+                    pathId,
+                    {
+                        name_en: payload.name_en,
+                        name_vi: payload.name_vi,
+                        description: payload.description,
+                    } as Partial<LearningPath>,
+                    { enableDataPartition: false } as any,
+                );
+            }
+
+            // Update tên từng ngày (nếu OpenAI có)
+            if (Array.isArray(payload?.days)) {
+                await Promise.all(
+                    payload.days.map(async (day: any, idx: number) => {
+                        const lesson = lessons[idx];
+                        if (!lesson) return;
+                        if (typeof day?.name_en === "string") {
+                            await this.lessonService.updateById(
+                                user,
+                                lesson._id,
+                                {
+                                    name_en: day.name_en,
+                                    name_vi: day.name_vi,
+                                } as Partial<Lesson>,
+                                { enableDataPartition: false } as any,
+                            );
+                        }
+                    }),
+                );
+            }
+
+            let totalVocabulary = 0;
+
+            // Fill nội dung vocab + example + lesson_vocabulary + exercises
+            for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+                const day = payload?.days?.[dayIndex];
+                const lesson = lessons[dayIndex];
+                if (!day || !lesson) continue;
+
+                const lessonVocabularies: Vocabulary[] = [];
+
+                for (let i = 0; i < (day.vocabulary?.length ?? 0); i++) {
+                    const v = day.vocabulary[i];
+
+                    const vocab = await this.vocabularyService.create(user, {
+                        word: (v.word ?? "").trim(),
+                        domain: parseVocabularyDomain(
+                            v.domain as string | undefined,
+                        ),
+                        phonetic: v.phonetic ?? undefined,
+                        part_of_speech: v.part_of_speech ?? undefined,
+                        definition_en: v.definition_en ?? undefined,
+                        definition_vi: v.definition_vi ?? undefined,
+                        difficulty_level: v.difficulty_level ?? undefined,
+                        audio_url: undefined,
+                        image_url: undefined,
+                    } as Partial<Vocabulary>);
+
+                    lessonVocabularies.push(vocab);
+
+                    // Sinh sentence_en
+                    let sentence_en_raw = "";
+                    try {
+                        const sentenceResp = await axios.post(
+                            GENERATE_SENTENCE_URL,
+                            { vocabulary: vocab.word },
+                            {
+                                headers: {
+                                    accept: "application/json",
+                                    "Content-Type": "application/json",
+                                },
+                                timeout: 360000,
+                            },
+                        );
+                        sentence_en_raw =
+                            sentenceResp.data?.data?.sentence ??
+                            sentenceResp.data?.sentence ??
+                            "";
+                    } catch (err) {
+                        this.logger.warn(
+                            `generate-sentence API failed for "${vocab.word}": ${(err as Error).message}`,
+                        );
+                    }
+
+                    const sentence_en =
+                        sentence_en_raw ||
+                        (v.usage_example_en &&
+                            String(v.usage_example_en).trim()) ||
+                        `I will use "${vocab.word}" in a natural sentence.`;
+
+                    // Sinh sentence_vi
+                    let sentence_vi = "";
+                    try {
+                        if (
+                            v.usage_example_vi &&
+                            String(v.usage_example_vi).trim()
+                        ) {
+                            sentence_vi = String(v.usage_example_vi).trim();
+                        } else {
+                            sentence_vi =
+                                await this.openAILearningPathService.translateToVietnamese(
+                                    sentence_en,
+                                );
+                        }
+                    } catch (err) {
+                        this.logger.warn(
+                            `translate failed for "${vocab.word}": ${(err as Error).message}`,
+                        );
+                        sentence_vi =
+                            (v.usage_example_vi &&
+                                String(v.usage_example_vi).trim()) ||
+                            sentence_en;
+                    }
+
+                    await this.exampleSentenceService.create(user, {
+                        vocab_id: vocab._id,
+                        sentence_en,
+                        sentence_vi,
+                    } as Partial<ExampleSentence>);
+
+                    // Lưu sentence_en vào RAM để fill-in-blank chạy trong cùng background loop
+                    (vocab as any).sentence_en = sentence_en;
+
+                    const lvId = randomBytes(12).toString("hex");
+                    await this.lessonVocabularyService.create(user, {
+                        _id: lvId,
+                        lesson_id: lesson._id,
+                        vocab_id: vocab._id,
+                        order_index: i + 1,
+                    } as any);
+
+                    totalVocabulary += 1;
+                }
+
+                if (lessonVocabularies.length > 0) {
+                    await this.exerciseService.createMatchingExercise(
+                        user,
+                        lesson._id,
+                        lessonVocabularies,
+                    );
+
+                    const fillInBlankSentences = lessonVocabularies.map(
+                        (vocab) => {
+                            const sentence_en = (vocab as any).sentence_en;
+                            if (sentence_en) {
+                                const sentenceWithBlank = sentence_en.replace(
+                                    new RegExp(`\\b${vocab.word}\\b`, "gi"),
+                                    "[BLANK]",
+                                );
+                                return {
+                                    sentence: sentenceWithBlank,
+                                    answers: [vocab.word],
+                                };
+                            }
+                            return {
+                                sentence: "I like to eat [BLANK] every day.",
+                                answers: [vocab.word],
+                            };
+                        },
+                    );
+                    await this.exerciseService.createFillInBlankExercise(
+                        user,
+                        lesson._id,
+                        fillInBlankSentences,
+                    );
+
+                    const pronunciationItems = lessonVocabularies
+                        .filter(
+                            (v) =>
+                                !!(
+                                    v.phonetic ||
+                                    v.definition_en ||
+                                    v.definition_vi
+                                ),
+                        )
+                        .map((v) => ({
+                            word: v.word,
+                            phonetic:
+                                (v as any).phonetic ||
+                                (v as any).definition_vi ||
+                                (v as any).definition_en ||
+                                "",
+                        }));
+
+                    if (pronunciationItems.length > 0) {
+                        await this.exerciseService.createPronunciationExercise(
+                            user,
+                            lesson._id,
+                            pronunciationItems,
+                        );
+                    }
+                }
+            }
+
+            this.logger.log(
+                `generateSchedule7DaysContentInBackground finished. totalVocabulary=${totalVocabulary} pathId=${pathId}`,
+            );
+        } catch (err) {
+            this.logger.error(
+                `generateSchedule7DaysContentInBackground failed pathId=${pathId}: ${(err as Error).message}`,
+            );
+        }
+    }
 }
