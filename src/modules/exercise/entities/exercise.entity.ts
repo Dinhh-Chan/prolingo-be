@@ -14,9 +14,14 @@ export class Exercise implements BaseEntity {
     _id: string;
 
     @IsString()
-    @IsNotEmpty({ message: "Type ID không được để trống" })
-    @EntityDefinition.field({ label: "Type ID", required: true })
-    type_id: string;
+    @IsNotEmpty({ message: "Type không được để trống" })
+    @EntityDefinition.field({ label: "Type", required: true })
+    type: string;
+
+    @IsString()
+    @IsOptional()
+    @EntityDefinition.field({ label: "Lesson ID" })
+    lesson_id?: string;
 
     @IsString()
     @IsOptional()

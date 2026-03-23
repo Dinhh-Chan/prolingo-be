@@ -17,6 +17,8 @@ import { VocabularyModel } from "../../vocabulary/models/vocabulary.model";
     updatedAt: "updated_at",
 })
 export class ExerciseModel extends Model implements Exercise {
+    type: string;
+    lesson_id?: string;
     @StrObjectId()
     @Column({
         type: DataType.UUID,

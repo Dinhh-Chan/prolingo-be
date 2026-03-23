@@ -9,6 +9,7 @@ import { LessonModule } from "@module/lesson/lesson.module";
 import { VocabularyModule } from "@module/vocabulary/vocabulary.module";
 import { ExampleSentenceModule } from "@module/example-sentence/example-sentence.module";
 import { LessonVocabularyModule } from "@module/lesson-vocabulary/lesson-vocabulary.module";
+import { ExerciseModule } from "@module/exercise/exercise.module";
 import { SequelizeModule } from "@nestjs/sequelize";
 import { SurveyModel } from "./models/survey.model";
 import { Entity } from "@module/repository";
@@ -24,6 +25,7 @@ import { SurveyRepositorySql } from "./repository/survey-repository.sql";
         VocabularyModule,
         ExampleSentenceModule,
         LessonVocabularyModule,
+        ExerciseModule,
         SequelizeModule.forFeature([SurveyModel]),
     ],
     controllers: [SurveyController],
