@@ -19,10 +19,13 @@ export class ExerciseController extends BaseControllerFactory<Exercise>(
         authorize: true,
         routes: {
             getMany: {
-                enable: false,
+                roles: [SystemRole.ADMIN, SystemRole.USER],
             },
             getById: {
-                roles: [SystemRole.ADMIN],
+                roles: [SystemRole.ADMIN, SystemRole.USER],
+            },
+            getPage: {
+                roles: [SystemRole.ADMIN, SystemRole.USER],
             },
         },
     },

@@ -22,7 +22,10 @@ export class LessonExerciseController extends BaseControllerFactory<LessonExerci
                 enable: false,
             },
             getById: {
-                roles: [SystemRole.ADMIN],
+                roles: [SystemRole.ADMIN, SystemRole.USER, SystemRole.STUDENT],
+            },
+            getPage: {
+                roles: [SystemRole.ADMIN, SystemRole.USER, SystemRole.STUDENT],
             },
         },
     },
