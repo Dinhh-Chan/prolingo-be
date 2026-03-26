@@ -11,6 +11,7 @@ import { ExerciseRepositorySql } from "./repository/exercise-repository.sql";
 import { ExerciseTypeModule } from "../exercise-type/exercise-type.module";
 import { VocabularyModule } from "../vocabulary/vocabulary.module";
 import { LessonVocabularyModule } from "../lesson-vocabulary/lesson-vocabulary.module";
+import { LessonExerciseModule } from "../lesson-exercise/lesson-exercise.module";
 
 @Module({
     imports: [
@@ -18,6 +19,7 @@ import { LessonVocabularyModule } from "../lesson-vocabulary/lesson-vocabulary.m
         ExerciseTypeModule,
         VocabularyModule,
         LessonVocabularyModule,
+        LessonExerciseModule,
     ],
     controllers: [ExerciseController, ExerciseGenerationController],
     providers: [

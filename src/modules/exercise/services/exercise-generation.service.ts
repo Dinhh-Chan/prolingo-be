@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { LessonVocabularyService } from "@module/lesson-vocabulary/services/lesson-vocabulary.service";
 import { User } from "@module/user/entities/user.entity";
+import { LessonExerciseService } from "@module/lesson-exercise/services/lesson-exercise.service";
 import { ExerciseService } from "./exercise.service";
 import { GenerateExercisesForLessonDto } from "../dto/generate-exercises-for-lesson.dto";
 
@@ -14,6 +15,7 @@ export class ExerciseGenerationService {
     constructor(
         private readonly lessonVocabularyService: LessonVocabularyService,
         private readonly exerciseService: ExerciseService,
+        private readonly lessonExerciseService: LessonExerciseService,
     ) {}
 
     private isVocabDue(vocab: any, now: Date): boolean {
@@ -141,5 +143,61 @@ export class ExerciseGenerationService {
             created_exercise_ids: created.filter(Boolean),
             selected_vocab_ids: selectedVocabIds,
         };
+    }
+
+    /**
+     * Trả về toàn bộ exercise thuộc 1 lesson (kèm order_index/is_required).
+     */
+    async getExercisesByLessonId(
+        user: User,
+        lessonId: string,
+    ): Promise<
+        Array<
+            {
+                lesson_id: string;
+                exercise_id: string;
+                order_index?: number;
+                is_required?: boolean;
+            } & Record<string, any>
+        >
+    > {
+        const lessonExercises = await this.lessonExerciseService.getMany(
+            user,
+            { lesson_id: lessonId } as any,
+            {
+                sort: { order_index: 1 },
+                enableDataPartition: false,
+            } as any,
+        );
+
+        const exerciseIds = lessonExercises
+            .map((le: any) => le.exercise_id)
+            .filter(Boolean);
+
+        if (!exerciseIds.length) return [];
+
+        const exercises = await this.exerciseService.getMany(
+            user,
+            { _id: { $in: exerciseIds } } as any,
+            {
+                enableDataPartition: false,
+            } as any,
+        );
+
+        const exerciseMap = new Map<string, any>(
+            exercises.map((e: any) => [String(e._id), e]),
+        );
+
+        return lessonExercises.map((le: any) => {
+            const ex = exerciseMap.get(String(le.exercise_id));
+            if (!ex) return le;
+            return {
+                ...ex,
+                lesson_id: le.lesson_id,
+                exercise_id: le.exercise_id,
+                order_index: le.order_index,
+                is_required: le.is_required,
+            };
+        });
     }
 }

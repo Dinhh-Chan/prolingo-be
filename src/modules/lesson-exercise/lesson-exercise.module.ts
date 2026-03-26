@@ -7,14 +7,9 @@ import { RepositoryProvider } from "@module/repository/common/repository";
 import { SequelizeModule } from "@nestjs/sequelize";
 import { LessonExerciseRepositorySql } from "./repository/lesson-exercise-repository.sql";
 import { LessonModule } from "../lesson/lesson.module";
-import { ExerciseModule } from "../exercise/exercise.module";
 
 @Module({
-    imports: [
-        SequelizeModule.forFeature([LessonExerciseModel]),
-        LessonModule,
-        ExerciseModule,
-    ],
+    imports: [SequelizeModule.forFeature([LessonExerciseModel]), LessonModule],
     controllers: [LessonExerciseController],
     providers: [
         LessonExerciseService,

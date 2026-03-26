@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UsePipes } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, UsePipes } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AbstractValidationPipe } from "@common/pipe/abstract-validation.pipe";
 import { AllowSystemRoles, ReqUser } from "@common/decorator/auth.decorator";
@@ -36,5 +36,23 @@ export class ExerciseGenerationController {
         @Body() dto: GenerateExercisesForLessonDto,
     ) {
         return this.exerciseGenerationService.generateForLesson(user, dto);
+    }
+
+    @Get("by-lesson/:lesson_id")
+    @AllowSystemRoles(SystemRole.USER, SystemRole.ADMIN, SystemRole.STUDENT)
+    @ApiOperation({
+        summary: "Lấy danh sách bài tập theo lesson_id",
+        description:
+            "Dùng sau khi gọi generate-for-lesson để lấy content của matching/fill-in-blank/pronunciation theo thứ tự order_index.",
+    })
+    @ApiResponse({ status: 200, description: "Trả về mảng exercise" })
+    async getExercisesByLesson(
+        @ReqUser() user: User,
+        @Param("lesson_id") lesson_id: string,
+    ) {
+        return this.exerciseGenerationService.getExercisesByLessonId(
+            user,
+            lesson_id,
+        );
     }
 }
