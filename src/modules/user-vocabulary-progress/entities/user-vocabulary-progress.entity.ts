@@ -47,6 +47,34 @@ export class UserVocabularyProgress implements BaseEntity {
     })
     flashcard_remembered_count?: number;
 
+    @IsNumber()
+    @IsOptional()
+    @EntityDefinition.field({
+        label: "Số lần làm sai (tích lũy)",
+    })
+    wrong_count?: number;
+
+    @IsNumber()
+    @IsOptional()
+    @EntityDefinition.field({
+        label: "Khoảng cách ôn (ngày)",
+    })
+    interval_days?: number;
+
+    @IsBoolean()
+    @IsOptional()
+    @EntityDefinition.field({
+        label: "Từ yếu (ưu tiên review)",
+    })
+    is_weak?: boolean;
+
+    @IsNumber()
+    @IsOptional()
+    @EntityDefinition.field({
+        label: "Chuỗi đúng liên tiếp để gỡ tag yếu",
+    })
+    weak_correct_streak?: number;
+
     createdAt?: Date;
     updatedAt?: Date;
 }

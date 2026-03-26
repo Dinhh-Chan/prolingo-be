@@ -11,6 +11,7 @@ import { AllowSystemRoles, ReqUser } from "@common/decorator/auth.decorator";
 import { User } from "@module/user/entities/user.entity";
 import { FlashcardSwipeDto } from "../dto/flashcard-swipe.dto";
 import { FlashcardResetLessonDto } from "../dto/flashcard-reset-lesson.dto";
+import { FlashcardSessionStartDto } from "../dto/flashcard-session-start.dto";
 import { AbstractValidationPipe } from "@common/pipe/abstract-validation.pipe";
 
 const flashcardSwipePipe = new AbstractValidationPipe(
@@ -20,6 +21,11 @@ const flashcardSwipePipe = new AbstractValidationPipe(
 const flashcardResetPipe = new AbstractValidationPipe(
     { whitelist: true },
     { body: FlashcardResetLessonDto },
+);
+
+const flashcardSessionStartPipe = new AbstractValidationPipe(
+    { whitelist: true },
+    { body: FlashcardSessionStartDto },
 );
 
 @Controller("user-vocabulary-progress")
@@ -80,6 +86,24 @@ export class UserVocabularyProgressController extends BaseControllerFactory<User
         return this.userVocabularyProgressService.resetFlashcardForLesson(
             user,
             dto.lesson_id,
+        );
+    }
+
+    @Post("flashcard/session/start")
+    @AllowSystemRoles(SystemRole.USER, SystemRole.ADMIN, SystemRole.STUDENT)
+    @ApiOperation({
+        summary: "Bắt đầu một phiên học flashcard (mixer 70/30 new/old)",
+        description:
+            "Backend chọn ~70% từ mới + ~30% từ due/weak dựa trên next_review_at và is_weak, rồi trả danh sách thẻ và task speaking nhẹ.",
+    })
+    @UsePipes(flashcardSessionStartPipe)
+    async flashcardSessionStart(
+        @ReqUser() user: User,
+        @Body() dto: FlashcardSessionStartDto,
+    ) {
+        return this.userVocabularyProgressService.startFlashcardSession(
+            user,
+            dto,
         );
     }
 }

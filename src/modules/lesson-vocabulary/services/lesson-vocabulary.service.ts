@@ -60,6 +60,15 @@ export class LessonVocabularyService extends BaseService<
             vocab_audio_url: vocab?.audio_url,
             flashcard_remembered_count: flash?.flashcard_remembered_count ?? 0,
             is_remembered: flash?.is_remembered ?? false,
+            level: flash?.level ?? 1,
+            wrong_count: flash?.wrong_count ?? 0,
+            interval_days: flash?.interval_days ?? 1,
+            next_review_at: flash?.next_review ?? null,
+            is_weak: flash?.is_weak ?? false,
+            weak_correct_streak: flash?.weak_correct_streak ?? 0,
+            quiz_type: UserVocabularyProgressService.quizTypeByLevel(
+                flash?.level ?? 1,
+            ),
         };
     }
 

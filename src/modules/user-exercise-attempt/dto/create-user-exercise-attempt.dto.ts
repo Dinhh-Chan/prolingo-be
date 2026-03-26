@@ -11,7 +11,7 @@ import { ApiProperty } from "@nestjs/swagger";
 export class CreateUserExerciseAttemptDto {
     @ApiProperty({ description: "User ID" })
     @IsString()
-    @IsNotEmpty({ message: "User ID không được để trống" })
+    @IsOptional()
     @EntityDefinition.field({ label: "User ID", required: true })
     user_id: string;
 

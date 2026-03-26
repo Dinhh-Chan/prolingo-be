@@ -101,6 +101,38 @@ export class UserVocabularyProgressModel
     flashcard_remembered_count?: number;
 
     @Column({
+        type: DataType.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+        field: "wrong_count",
+    })
+    wrong_count?: number;
+
+    @Column({
+        type: DataType.INTEGER,
+        allowNull: false,
+        defaultValue: 1,
+        field: "interval_days",
+    })
+    interval_days?: number;
+
+    @Column({
+        type: DataType.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+        field: "is_weak",
+    })
+    is_weak?: boolean;
+
+    @Column({
+        type: DataType.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+        field: "weak_correct_streak",
+    })
+    weak_correct_streak?: number;
+
+    @Column({
         type: DataType.DATE,
         allowNull: false,
         defaultValue: DataType.NOW,

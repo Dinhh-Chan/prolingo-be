@@ -18,6 +18,9 @@ export class UserExerciseAttemptController extends BaseControllerFactory<UserExe
     {
         authorize: true,
         routes: {
+            create: {
+                roles: [SystemRole.ADMIN, SystemRole.USER, SystemRole.STUDENT],
+            },
             getMany: {
                 enable: false,
             },

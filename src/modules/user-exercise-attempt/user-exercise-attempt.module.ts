@@ -9,6 +9,8 @@ import { UserExerciseAttemptRepositorySql } from "./repository/user-exercise-att
 import { UserModule } from "../user/user.module";
 import { ExerciseModule } from "../exercise/exercise.module";
 import { LessonModule } from "../lesson/lesson.module";
+import { LessonVocabularyModule } from "../lesson-vocabulary/lesson-vocabulary.module";
+import { UserVocabularyProgressModule } from "../user-vocabulary-progress/user-vocabulary-progress.module";
 
 @Module({
     imports: [
@@ -16,6 +18,8 @@ import { LessonModule } from "../lesson/lesson.module";
         UserModule,
         ExerciseModule,
         LessonModule,
+        LessonVocabularyModule,
+        UserVocabularyProgressModule,
     ],
     controllers: [UserExerciseAttemptController],
     providers: [

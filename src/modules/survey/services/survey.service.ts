@@ -9,7 +9,6 @@ import { LessonService } from "@module/lesson/services/lesson.service";
 import { VocabularyService } from "@module/vocabulary/services/vocabulary.service";
 import { ExampleSentenceService } from "@module/example-sentence/services/example-sentence.service";
 import { LessonVocabularyService } from "@module/lesson-vocabulary/services/lesson-vocabulary.service";
-import { ExerciseService } from "@module/exercise/services/exercise.service";
 import {
     SURVEY_CURRENT_STATUS_OPTIONS,
     SURVEY_ENGLISH_LEVEL_OPTIONS,
@@ -47,7 +46,6 @@ export class SurveyService {
         private readonly vocabularyService: VocabularyService,
         private readonly exampleSentenceService: ExampleSentenceService,
         private readonly lessonVocabularyService: LessonVocabularyService,
-        private readonly exerciseService: ExerciseService,
         private readonly openAILearningPathService: OpenAILearningPathService,
     ) {}
 
@@ -338,9 +336,6 @@ export class SurveyService {
                     sentence_vi,
                 } as Partial<ExampleSentence>);
 
-                // Lưu sentence_en vào vocab để dùng cho bài tập fill in blank
-                (vocab as any).sentence_en = sentence_en;
-
                 const lvId = randomBytes(12).toString("hex");
                 await this.lessonVocabularyService.create(user, {
                     _id: lvId,
@@ -349,67 +344,6 @@ export class SurveyService {
                     order_index: i + 1,
                 } as any);
                 totalVocabulary += 1;
-            }
-
-            // Tạo bài tập matching nối từ với nghĩa
-            if (lessonVocabularies.length > 0) {
-                await this.exerciseService.createMatchingExercise(
-                    user,
-                    lesson._id,
-                    lessonVocabularies,
-                );
-
-                // Tạo bài tập điền vào chỗ trống (fill in the blank) với câu ví dụ đã sinh ở trên, chỗ trống là từ vựng.
-                const fillInBlankSentences = lessonVocabularies.map((vocab) => {
-                    const sentence_en = (vocab as any).sentence_en;
-                    if (sentence_en) {
-                        const sentenceWithBlank = sentence_en.replace(
-                            new RegExp(`\\b${vocab.word}\\b`, "gi"),
-                            "[BLANK]",
-                        );
-                        return {
-                            sentence: sentenceWithBlank,
-                            answers: [vocab.word],
-                        };
-                    } else {
-                        return {
-                            sentence: `I like to eat [BLANK] every day.`,
-                            answers: [vocab.word],
-                        };
-                    }
-                });
-                await this.exerciseService.createFillInBlankExercise(
-                    user,
-                    lesson._id,
-                    fillInBlankSentences,
-                );
-
-                // Tạo bài tập phát âm -> chọn từ đúng
-                const pronunciationItems = lessonVocabularies
-                    .filter(
-                        (v) =>
-                            !!(
-                                v.phonetic ||
-                                v.definition_en ||
-                                v.definition_vi
-                            ),
-                    )
-                    .map((v) => ({
-                        word: v.word,
-                        phonetic:
-                            (v as any).phonetic ||
-                            (v as any).definition_vi ||
-                            (v as any).definition_en ||
-                            "",
-                    }));
-
-                if (pronunciationItems.length > 0) {
-                    await this.exerciseService.createPronunciationExercise(
-                        user,
-                        lesson._id,
-                        pronunciationItems,
-                    );
-                }
             }
         }
 
@@ -648,9 +582,6 @@ export class SurveyService {
                         sentence_vi,
                     } as Partial<ExampleSentence>);
 
-                    // Lưu sentence_en vào RAM để fill-in-blank chạy trong cùng background loop
-                    (vocab as any).sentence_en = sentence_en;
-
                     const lvId = randomBytes(12).toString("hex");
                     await this.lessonVocabularyService.create(user, {
                         _id: lvId,
@@ -660,65 +591,6 @@ export class SurveyService {
                     } as any);
 
                     totalVocabulary += 1;
-                }
-
-                if (lessonVocabularies.length > 0) {
-                    await this.exerciseService.createMatchingExercise(
-                        user,
-                        lesson._id,
-                        lessonVocabularies,
-                    );
-
-                    const fillInBlankSentences = lessonVocabularies.map(
-                        (vocab) => {
-                            const sentence_en = (vocab as any).sentence_en;
-                            if (sentence_en) {
-                                const sentenceWithBlank = sentence_en.replace(
-                                    new RegExp(`\\b${vocab.word}\\b`, "gi"),
-                                    "[BLANK]",
-                                );
-                                return {
-                                    sentence: sentenceWithBlank,
-                                    answers: [vocab.word],
-                                };
-                            }
-                            return {
-                                sentence: "I like to eat [BLANK] every day.",
-                                answers: [vocab.word],
-                            };
-                        },
-                    );
-                    await this.exerciseService.createFillInBlankExercise(
-                        user,
-                        lesson._id,
-                        fillInBlankSentences,
-                    );
-
-                    const pronunciationItems = lessonVocabularies
-                        .filter(
-                            (v) =>
-                                !!(
-                                    v.phonetic ||
-                                    v.definition_en ||
-                                    v.definition_vi
-                                ),
-                        )
-                        .map((v) => ({
-                            word: v.word,
-                            phonetic:
-                                (v as any).phonetic ||
-                                (v as any).definition_vi ||
-                                (v as any).definition_en ||
-                                "",
-                        }));
-
-                    if (pronunciationItems.length > 0) {
-                        await this.exerciseService.createPronunciationExercise(
-                            user,
-                            lesson._id,
-                            pronunciationItems,
-                        );
-                    }
                 }
             }
 

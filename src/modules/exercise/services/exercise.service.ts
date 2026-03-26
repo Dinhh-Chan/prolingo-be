@@ -6,16 +6,31 @@ import { Exercise } from "../entities/exercise.entity";
 import { ExerciseRepository } from "../repository/exercise-repository.interface";
 import { User } from "@module/user/entities/user.entity";
 import { GetManyQuery, GetPageQuery } from "@common/constant";
+import { ExerciseTypeService } from "@module/exercise-type/services/exercise-type.service";
 
 @Injectable()
 export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
     constructor(
         @InjectRepository(Entity.EXERCISE)
         private readonly exerciseRepository: ExerciseRepository,
+        private readonly exerciseTypeService: ExerciseTypeService,
     ) {
         super(exerciseRepository, {
             notFoundCode: "error-exercise-not-found",
         });
+    }
+
+    private async getTypeIdByCode(user: User, code: string): Promise<string> {
+        const exerciseType = await this.exerciseTypeService.getOne(
+            user,
+            { code } as any,
+            { enableDataPartition: false } as any,
+        );
+        if (!exerciseType?._id) {
+            // Nếu không có seed exercise_types theo code, thì không thể tạo exercise
+            throw new Error(`Missing exercise type for code="${code}"`);
+        }
+        return exerciseType._id;
     }
 
     async getMany(
@@ -46,6 +61,7 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
         lessonId: string,
         vocabularies: any[],
     ): Promise<Exercise> {
+        const type_id = await this.getTypeIdByCode(user, "matching");
         // Tạo left side - danh sách từ vựng gốc
         const left = vocabularies.map((vocab) => ({
             id: vocab._id || vocab.id,
@@ -68,6 +84,7 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
 
         const exercise = await super.create(user, {
             type: "matching",
+            type_id,
             lesson_id: lessonId,
             content,
         } as Partial<Exercise>);
@@ -99,12 +116,14 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
         lessonId: string,
         sentences: { sentence: string; answers: string[] }[],
     ): Promise<Exercise> {
+        const type_id = await this.getTypeIdByCode(user, "fill_in_blank");
         const content = {
             sentences,
         };
 
         const exercise = await super.create(user, {
             type: "fill_in_blank",
+            type_id,
             lesson_id: lessonId,
             content,
         } as Partial<Exercise>);
@@ -123,6 +142,7 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
         lessonId: string,
         items: { word: string; phonetic?: string }[],
     ): Promise<Exercise> {
+        const type_id = await this.getTypeIdByCode(user, "pronunciation");
         const allWords = items.map((item) => item.word);
 
         const questions = items.map((item) => {
@@ -153,6 +173,7 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
 
         const exercise = await super.create(user, {
             type: "pronunciation",
+            type_id,
             lesson_id: lessonId,
             content,
         } as Partial<Exercise>);

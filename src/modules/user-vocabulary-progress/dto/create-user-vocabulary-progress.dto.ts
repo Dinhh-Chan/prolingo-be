@@ -62,4 +62,36 @@ export class CreateUserVocabularyProgressDto {
     @IsOptional()
     @EntityDefinition.field({ label: "Đã thành thạo" })
     is_mastered?: boolean;
+
+    @ApiProperty({
+        description: "Số lần làm sai tích lũy",
+        default: 0,
+        required: false,
+    })
+    @IsOptional()
+    wrong_count?: number;
+
+    @ApiProperty({
+        description: "Khoảng cách ôn (ngày)",
+        default: 1,
+        required: false,
+    })
+    @IsOptional()
+    interval_days?: number;
+
+    @ApiProperty({
+        description: "Từ yếu (ưu tiên ôn)",
+        default: false,
+        required: false,
+    })
+    @IsOptional()
+    is_weak?: boolean;
+
+    @ApiProperty({
+        description: "Chuỗi đúng liên tiếp khi đang gắn tag yếu",
+        default: 0,
+        required: false,
+    })
+    @IsOptional()
+    weak_correct_streak?: number;
 }

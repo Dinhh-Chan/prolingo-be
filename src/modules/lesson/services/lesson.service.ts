@@ -86,6 +86,15 @@ export class LessonService extends BaseService<Lesson, LessonRepository> {
                 flashcard_remembered_count:
                     flash?.flashcard_remembered_count ?? 0,
                 is_remembered: flash?.is_remembered ?? false,
+                level: flash?.level ?? 1,
+                wrong_count: flash?.wrong_count ?? 0,
+                interval_days: flash?.interval_days ?? 1,
+                next_review_at: flash?.next_review ?? null,
+                is_weak: flash?.is_weak ?? false,
+                weak_correct_streak: flash?.weak_correct_streak ?? 0,
+                quiz_type: UserVocabularyProgressService.quizTypeByLevel(
+                    flash?.level ?? 1,
+                ),
                 example_audio_urls: example_sentences
                     .map((item) => item.audio_url)
                     .filter((url): url is string => Boolean(url)),
