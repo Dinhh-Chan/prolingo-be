@@ -41,8 +41,8 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
         return super.getMany(user, conditions, query);
     }
 
-    private normalizeExerciseContent(exercise: any): any {
-        const type = exercise?.type;
+    private normalizeExerciseContent(exercise: any, typeCode?: string): any {
+        const type = typeCode || exercise?.type;
         const content = exercise?.content ?? {};
 
         if (type === "matching") {
@@ -98,30 +98,36 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
         const pageData = await super.getPage(user, conditions, query);
         const raw = pageData?.result || [];
 
-        const typeCodes = Array.from(
+        const typeIds = Array.from(
             new Set(
                 raw
-                    .map((e: any) => e?.type)
+                    .map((e: any) => e?.type_id)
                     .filter((x: any) => typeof x === "string"),
             ),
         );
         const exerciseTypes =
-            typeCodes.length > 0
+            typeIds.length > 0
                 ? await this.exerciseTypeService.getMany(
                       user,
-                      { code: { $in: typeCodes } } as any,
+                      { _id: { $in: typeIds } } as any,
                       { enableDataPartition: false } as any,
                   )
                 : [];
         const typeMap = new Map(
-            exerciseTypes.map((item: any) => [String(item.code), item]),
+            exerciseTypes.map((item: any) => [String(item._id), item]),
         );
 
         const result = raw.map((exercise: any) => {
-            const typeInfo = typeMap.get(String(exercise.type));
+            const typeInfo = typeMap.get(String(exercise.type_id));
+            const resolvedTypeCode =
+                (typeof exercise.type === "string" && exercise.type) ||
+                typeInfo?.code;
             return {
                 ...exercise,
-                content: this.normalizeExerciseContent(exercise),
+                content: this.normalizeExerciseContent(
+                    exercise,
+                    resolvedTypeCode,
+                ),
                 type_info: typeInfo
                     ? {
                           _id: typeInfo._id,
