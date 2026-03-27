@@ -76,7 +76,8 @@ const SCHEDULE_7_DAYS_PROMPT = `You are an expert English vocabulary designer. G
   ]
 }
 Rules:
-- Output exactly 7 days. Each day must have at least 3 and at most 8 vocabulary items.
+- Output exactly 7 days. Each day should have 5 to 8 vocabulary items by default.
+- If user prompt specifies a target vocabulary count/day, prioritize that target and keep it consistent across all 7 days.
 - Every vocabulary item must have: word, domain, usage_example_en, usage_example_vi. Other fields can be empty string if not applicable.
 - Match content to: user role, industry if given, English level, custom_focus.
 - Use only the keys above. Output nothing else but the JSON.`;
@@ -306,6 +307,16 @@ export class OpenAILearningPathService {
             throw new Error("OPENAI_API_KEY is not configured");
         }
 
+        const dailyMinutes = Number(context.daily_learning_minutes ?? 15);
+        const targetWordsPerDay =
+            dailyMinutes >= 30
+                ? 8
+                : dailyMinutes >= 20
+                  ? 6
+                  : dailyMinutes >= 15
+                    ? 5
+                    : 4;
+
         const userPrompt = [
             "Design a 7-day vocabulary schedule with the following survey data:",
             context.current_status &&
@@ -322,6 +333,7 @@ export class OpenAILearningPathService {
                 `- Additional focus: ${context.custom_focus_2}`,
             context.course_duration_weeks &&
                 `- Course duration: ${context.course_duration_weeks} weeks`,
+            `- Vocabulary target per day: exactly ${targetWordsPerDay} words (keep all 7 days consistent)`,
         ]
             .filter(Boolean)
             .join("\n");

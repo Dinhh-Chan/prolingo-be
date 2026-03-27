@@ -66,12 +66,21 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
         const left = vocabularies.map((vocab) => ({
             id: vocab._id || vocab.id,
             text: vocab.word,
+            question_type: "matching",
         }));
 
         // Tạo right side - danh sách định nghĩa (xáo trộn)
         const right = vocabularies.map((vocab) => ({
             id: vocab._id || vocab.id,
             text: vocab.definition_vi || vocab.definition_en || "",
+            question_type: "matching",
+        }));
+
+        // Cặp đúng để FE có thể render dạng "mỗi câu matching"
+        const pairs = vocabularies.map((vocab) => ({
+            left_id: vocab._id || vocab.id,
+            right_id: vocab._id || vocab.id,
+            question_type: "matching",
         }));
 
         // Shuffle right side
@@ -80,6 +89,7 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
         const content = {
             left,
             right: shuffledRight,
+            pairs,
         };
 
         const exercise = await super.create(user, {
@@ -117,8 +127,12 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
         sentences: { sentence: string; answers: string[] }[],
     ): Promise<Exercise> {
         const type_id = await this.getTypeIdByCode(user, "fill_in_blank");
+        const normalizedSentences = sentences.map((item) => ({
+            ...item,
+            question_type: "fill_in_blank",
+        }));
         const content = {
-            sentences,
+            sentences: normalizedSentences,
         };
 
         const exercise = await super.create(user, {
@@ -164,6 +178,7 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
                 question: `Which word matches the pronunciation ${item.phonetic || "[?]"}?`,
                 options: this.shuffleArray(options),
                 correctAnswer: item.word,
+                question_type: "pronunciation",
             };
         });
 
