@@ -41,12 +41,103 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
         return super.getMany(user, conditions, query);
     }
 
+    private normalizeExerciseContent(exercise: any): any {
+        const type = exercise?.type;
+        const content = exercise?.content ?? {};
+
+        if (type === "matching") {
+            const left = Array.isArray(content.left)
+                ? content.left.map((x: any) => ({
+                      ...x,
+                      question_type: x?.question_type || "matching",
+                  }))
+                : [];
+            const right = Array.isArray(content.right)
+                ? content.right.map((x: any) => ({
+                      ...x,
+                      question_type: x?.question_type || "matching",
+                  }))
+                : [];
+            const pairs = Array.isArray(content.pairs)
+                ? content.pairs.map((x: any) => ({
+                      ...x,
+                      question_type: x?.question_type || "matching",
+                  }))
+                : [];
+            return { ...content, left, right, pairs };
+        }
+
+        if (type === "fill_in_blank") {
+            const sentences = Array.isArray(content.sentences)
+                ? content.sentences.map((x: any) => ({
+                      ...x,
+                      question_type: x?.question_type || "fill_in_blank",
+                  }))
+                : [];
+            return { ...content, sentences };
+        }
+
+        if (type === "pronunciation") {
+            const questions = Array.isArray(content.questions)
+                ? content.questions.map((x: any) => ({
+                      ...x,
+                      question_type: x?.question_type || "pronunciation",
+                  }))
+                : [];
+            return { ...content, questions };
+        }
+
+        return content;
+    }
+
     async getPage(
         user: User,
         conditions: any,
         query: GetPageQuery<Exercise>,
     ): Promise<any> {
-        return super.getPage(user, conditions, query);
+        const pageData = await super.getPage(user, conditions, query);
+        const raw = pageData?.result || [];
+
+        const typeCodes = Array.from(
+            new Set(
+                raw
+                    .map((e: any) => e?.type)
+                    .filter((x: any) => typeof x === "string"),
+            ),
+        );
+        const exerciseTypes =
+            typeCodes.length > 0
+                ? await this.exerciseTypeService.getMany(
+                      user,
+                      { code: { $in: typeCodes } } as any,
+                      { enableDataPartition: false } as any,
+                  )
+                : [];
+        const typeMap = new Map(
+            exerciseTypes.map((item: any) => [String(item.code), item]),
+        );
+
+        const result = raw.map((exercise: any) => {
+            const typeInfo = typeMap.get(String(exercise.type));
+            return {
+                ...exercise,
+                content: this.normalizeExerciseContent(exercise),
+                type_info: typeInfo
+                    ? {
+                          _id: typeInfo._id,
+                          code: typeInfo.code,
+                          name_en: typeInfo.name_en,
+                          name_vi: typeInfo.name_vi,
+                          skill_category: typeInfo.skill_category,
+                      }
+                    : null,
+            };
+        });
+
+        return {
+            ...pageData,
+            result,
+        };
     }
 
     /**
