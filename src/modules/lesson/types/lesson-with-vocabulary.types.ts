@@ -10,6 +10,8 @@ export interface LessonVocabularyItem {
     audio_url?: string;
     /** Phiên âm của từ (IPA) để FE hiển thị nhanh. */
     phonetic?: string;
+    /** Từ loại (noun, verb, adjective...). */
+    part_of_speech?: string;
     /** Câu ví dụ ưu tiên hiển thị nhanh ở lesson detail. */
     sentence_en?: string;
     sentence_vi?: string;
