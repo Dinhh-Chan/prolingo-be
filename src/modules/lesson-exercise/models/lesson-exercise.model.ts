@@ -19,7 +19,7 @@ export class LessonExerciseModel extends Model implements LessonExercise {
     @PrimaryKey
     @ForeignKey(() => LessonModel)
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         primaryKey: true,
         field: "lesson_id",
     })

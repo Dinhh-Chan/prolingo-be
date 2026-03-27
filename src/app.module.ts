@@ -36,6 +36,7 @@ import { UserVocabularyStatModule } from "./modules/user-vocabulary-stat/user-vo
 import { UserDailyActivityModule } from "./modules/user-daily-activity/user-daily-activity.module";
 import { UsersModule } from "./modules/users/users.module";
 import { SurveyModule } from "./modules/survey/survey.module";
+import { RoadmapModule } from "./modules/roadmap/roadmap.module";
 
 @Module({
     imports: [
@@ -76,6 +77,7 @@ import { SurveyModule } from "./modules/survey/survey.module";
         UserDailyActivityModule,
         UsersModule,
         SurveyModule,
+        RoadmapModule,
     ],
     providers: [...DefaultProviders],
     controllers: [AppController],

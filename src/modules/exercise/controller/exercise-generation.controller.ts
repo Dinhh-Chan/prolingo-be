@@ -1,6 +1,13 @@
-import { Body, Controller, Get, Param, Post, UsePipes } from "@nestjs/common";
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Get,
+    Param,
+    Post,
+    Query,
+} from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { AbstractValidationPipe } from "@common/pipe/abstract-validation.pipe";
 import {
     AllowSystemRoles,
     Authorization,
@@ -10,11 +17,6 @@ import { SystemRole } from "@module/user/common/constant";
 import { User } from "@module/user/entities/user.entity";
 import { GenerateExercisesForLessonDto } from "../dto/generate-exercises-for-lesson.dto";
 import { ExerciseGenerationService } from "../services/exercise-generation.service";
-
-const generateExercisesPipe = new AbstractValidationPipe(
-    { whitelist: true },
-    { body: GenerateExercisesForLessonDto },
-);
 
 @Controller("exercises")
 @ApiTags("Exercise Generation")
@@ -35,12 +37,33 @@ export class ExerciseGenerationController {
         status: 201,
         description: "Đã sinh bài tập cho lesson.",
     })
-    @UsePipes(generateExercisesPipe)
     async generateForLesson(
         @ReqUser() user: User,
         @Body() dto: GenerateExercisesForLessonDto,
+        @Query("lesson_id") lessonIdFromQuery?: string,
+        @Query("limit") limitFromQuery?: string,
     ) {
-        return this.exerciseGenerationService.generateForLesson(user, dto);
+        const lesson_id = dto?.lesson_id || lessonIdFromQuery;
+        const limit =
+            dto?.limit ??
+            (limitFromQuery != null ? Number(limitFromQuery) : undefined);
+
+        if (!lesson_id || typeof lesson_id !== "string") {
+            throw new BadRequestException("lesson_id must be a string");
+        }
+        if (
+            limit != null &&
+            (!Number.isFinite(limit) || !Number.isInteger(limit) || limit < 2)
+        ) {
+            throw new BadRequestException(
+                "limit must be an integer number >= 2",
+            );
+        }
+
+        return this.exerciseGenerationService.generateForLesson(user, {
+            lesson_id,
+            limit,
+        });
     }
 
     @Get("by-lesson/:lesson_id")
