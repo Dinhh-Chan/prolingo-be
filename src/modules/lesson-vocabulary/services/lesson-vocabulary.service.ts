@@ -58,6 +58,7 @@ export class LessonVocabularyService extends BaseService<
             sentence_vi: firstSentence?.sentence_vi,
             sentence_audio_url: firstSentence?.audio_url,
             vocab_audio_url: vocab?.audio_url,
+            phonetic: vocab?.phonetic,
             flashcard_remembered_count: flash?.flashcard_remembered_count ?? 0,
             is_remembered: flash?.is_remembered ?? false,
             level: flash?.level ?? 1,

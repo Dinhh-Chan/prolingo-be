@@ -88,8 +88,36 @@ export class VocabularyService extends BaseService<
             } as any);
 
             if (existed) {
+                const patch: Partial<Vocabulary> = {};
+                // Bổ sung metadata còn thiếu cho từ đã tồn tại (đặc biệt là phonetic)
+                if (!existed.phonetic && dto.phonetic) {
+                    patch.phonetic = dto.phonetic;
+                }
+                if (!existed.part_of_speech && dto.part_of_speech) {
+                    patch.part_of_speech = dto.part_of_speech;
+                }
+                if (!existed.definition_en && dto.definition_en) {
+                    patch.definition_en = dto.definition_en;
+                }
+                if (!existed.definition_vi && dto.definition_vi) {
+                    patch.definition_vi = dto.definition_vi;
+                }
+                if (!existed.difficulty_level && dto.difficulty_level) {
+                    patch.difficulty_level = dto.difficulty_level;
+                }
+
+                let hydrated = existed;
+                if (Object.keys(patch).length > 0) {
+                    const updatedMeta =
+                        await this.vocabularyRepository.updateById(
+                            existed._id,
+                            patch as any,
+                        );
+                    hydrated = updatedMeta ?? existed;
+                }
+
                 if (existed.audio_url) {
-                    return existed;
+                    return hydrated;
                 }
 
                 const audioUrl = await this.generateAndSaveTtsAudio({
@@ -100,7 +128,7 @@ export class VocabularyService extends BaseService<
                     existed._id,
                     { audio_url: audioUrl } as any,
                 );
-                return updated ?? existed;
+                return updated ?? hydrated;
             }
         }
 

@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { LessonVocabularyService } from "@module/lesson-vocabulary/services/lesson-vocabulary.service";
 import { User } from "@module/user/entities/user.entity";
 import { LessonExerciseService } from "@module/lesson-exercise/services/lesson-exercise.service";
+import { ExerciseTypeService } from "@module/exercise-type/services/exercise-type.service";
 import { ExerciseService } from "./exercise.service";
 import { GenerateExercisesForLessonDto } from "../dto/generate-exercises-for-lesson.dto";
 
@@ -16,6 +17,7 @@ export class ExerciseGenerationService {
         private readonly lessonVocabularyService: LessonVocabularyService,
         private readonly exerciseService: ExerciseService,
         private readonly lessonExerciseService: LessonExerciseService,
+        private readonly exerciseTypeService: ExerciseTypeService,
     ) {}
 
     private isVocabDue(vocab: any, now: Date): boolean {
@@ -188,15 +190,44 @@ export class ExerciseGenerationService {
             exercises.map((e: any) => [String(e._id), e]),
         );
 
+        const typeCodes = Array.from(
+            new Set(
+                exercises
+                    .map((e: any) => e?.type)
+                    .filter((code: unknown) => typeof code === "string"),
+            ),
+        );
+        const exerciseTypes =
+            typeCodes.length > 0
+                ? await this.exerciseTypeService.getMany(
+                      user,
+                      { code: { $in: typeCodes } } as any,
+                      { enableDataPartition: false } as any,
+                  )
+                : [];
+        const exerciseTypeMap = new Map<string, any>(
+            exerciseTypes.map((t: any) => [String(t.code), t]),
+        );
+
         return lessonExercises.map((le: any) => {
             const ex = exerciseMap.get(String(le.exercise_id));
             if (!ex) return le;
+            const typeInfo = exerciseTypeMap.get(String(ex.type));
             return {
                 ...ex,
                 lesson_id: le.lesson_id,
                 exercise_id: le.exercise_id,
                 order_index: le.order_index,
                 is_required: le.is_required,
+                type_info: typeInfo
+                    ? {
+                          _id: typeInfo._id,
+                          code: typeInfo.code,
+                          name_en: typeInfo.name_en,
+                          name_vi: typeInfo.name_vi,
+                          skill_category: typeInfo.skill_category,
+                      }
+                    : null,
             };
         });
     }

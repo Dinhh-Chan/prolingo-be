@@ -8,6 +8,8 @@ export interface LessonVocabularyItem {
     lesson_vocabulary_id: string;
     /** Audio từ bảng vocabulary (alias để FE dùng nhanh). */
     audio_url?: string;
+    /** Phiên âm của từ (IPA) để FE hiển thị nhanh. */
+    phonetic?: string;
     /** Câu ví dụ ưu tiên hiển thị nhanh ở lesson detail. */
     sentence_en?: string;
     sentence_vi?: string;

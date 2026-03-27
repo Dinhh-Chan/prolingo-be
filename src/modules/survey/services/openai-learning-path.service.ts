@@ -145,7 +145,15 @@ function normalizeSchedule7DaysPayload(
                 return {
                     word,
                     phonetic:
-                        typeof o.phonetic === "string" ? o.phonetic : undefined,
+                        typeof o.phonetic === "string"
+                            ? o.phonetic
+                            : typeof o.pronunciation === "string"
+                              ? o.pronunciation
+                              : typeof o.ipa === "string"
+                                ? o.ipa
+                                : typeof o.pronunciation_ipa === "string"
+                                  ? o.pronunciation_ipa
+                                  : undefined,
                     part_of_speech:
                         typeof o.part_of_speech === "string"
                             ? o.part_of_speech

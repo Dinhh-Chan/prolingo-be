@@ -80,6 +80,7 @@ export class LessonService extends BaseService<Lesson, LessonRepository> {
                 order_index: link.order_index,
                 lesson_vocabulary_id: link._id,
                 audio_url: vocab.audio_url,
+                phonetic: vocab.phonetic,
                 sentence_en: firstSentence?.sentence_en,
                 sentence_vi: firstSentence?.sentence_vi,
                 sentence_audio_url: firstSentence?.audio_url,
