@@ -1,7 +1,11 @@
 import { Body, Controller, Get, Param, Post, UsePipes } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AbstractValidationPipe } from "@common/pipe/abstract-validation.pipe";
-import { AllowSystemRoles, ReqUser } from "@common/decorator/auth.decorator";
+import {
+    AllowSystemRoles,
+    Authorization,
+    ReqUser,
+} from "@common/decorator/auth.decorator";
 import { SystemRole } from "@module/user/common/constant";
 import { User } from "@module/user/entities/user.entity";
 import { GenerateExercisesForLessonDto } from "../dto/generate-exercises-for-lesson.dto";
@@ -14,6 +18,7 @@ const generateExercisesPipe = new AbstractValidationPipe(
 
 @Controller("exercises")
 @ApiTags("Exercise Generation")
+@Authorization()
 export class ExerciseGenerationController {
     constructor(
         private readonly exerciseGenerationService: ExerciseGenerationService,
