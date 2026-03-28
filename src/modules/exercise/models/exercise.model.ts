@@ -21,23 +21,22 @@ export class ExerciseModel extends Model implements Exercise {
     lesson_id?: string;
     @StrObjectId()
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         primaryKey: true,
-        defaultValue: DataType.UUIDV4,
-        field: "exercise_id",
+        field: "_id",
     })
     _id: string;
 
     @ForeignKey(() => ExerciseTypeModel)
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         allowNull: false,
         field: "type_id",
     })
     type_id: string;
 
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         allowNull: true,
         field: "concept_id",
     })
@@ -45,7 +44,7 @@ export class ExerciseModel extends Model implements Exercise {
 
     @ForeignKey(() => VocabularyModel)
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         allowNull: true,
         field: "vocab_id",
     })

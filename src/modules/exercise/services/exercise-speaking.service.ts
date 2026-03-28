@@ -68,12 +68,15 @@ export class ExerciseSpeakingService {
         const passed =
             scoreNum !== null ? scoreNum >= DEFAULT_PASS_SCORE : false;
 
+        const lessonId =
+            dto.lesson_id?.trim() !== "" ? dto.lesson_id?.trim() : undefined;
+
         const attempt = await this.userSpeakingAttemptService.create(
             user,
             {
                 user_id: user._id,
                 vocab_id: dto.vocab_id,
-                lesson_id: dto.lesson_id,
+                lesson_id: lessonId,
                 speaking_level: speakingLevel,
                 reference_text: referenceText,
                 audio_url: undefined,

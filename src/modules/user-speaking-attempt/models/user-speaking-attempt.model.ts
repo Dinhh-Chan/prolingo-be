@@ -47,9 +47,10 @@ export class UserSpeakingAttemptModel
     })
     user_id: string;
 
+    /** Khớp `vocabulary.vocab_id` dạng ObjectId Mongo (24 ký tự hex), không phải UUID chuẩn */
     @ForeignKey(() => VocabularyModel)
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(24),
         allowNull: false,
         field: "vocab_id",
     })

@@ -40,7 +40,7 @@ export class UserExerciseAttemptModel
 
     @ForeignKey(() => ExerciseModel)
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(64),
         allowNull: false,
         field: "exercise_id",
     })

@@ -12,9 +12,8 @@ import { VocabularyDomain } from "../common/vocabulary-domain.enum";
 export class VocabularyModel extends Model implements Vocabulary {
     @StrObjectId()
     @Column({
-        type: DataType.UUID,
+        type: DataType.STRING(24),
         primaryKey: true,
-        defaultValue: DataType.UUIDV4,
         field: "vocab_id",
     })
     _id: string;
