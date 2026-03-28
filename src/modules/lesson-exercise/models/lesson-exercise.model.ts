@@ -1,4 +1,3 @@
-import { StrObjectId } from "@common/constant";
 import {
     Column,
     DataType,
@@ -16,6 +15,7 @@ import { ExerciseModel } from "../../exercise/models/exercise.model";
     timestamps: false,
 })
 export class LessonExerciseModel extends Model implements LessonExercise {
+    /** Khóa ngoại tới `lessons.lesson_id` — chuỗi ObjectId 24 ký tự, không dùng UUID Postgres. */
     @PrimaryKey
     @ForeignKey(() => LessonModel)
     @Column({
@@ -50,7 +50,9 @@ export class LessonExerciseModel extends Model implements LessonExercise {
     })
     is_required?: boolean;
 
-    @StrObjectId()
+    /**
+     * Alias cho API/entity; không map thành cột DB (tránh @StrObjectId thêm cột `_id` kiểu uuid).
+     */
     get _id(): string {
         return this.lesson_id;
     }
