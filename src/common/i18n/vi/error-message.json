@@ -60,6 +60,8 @@
     "error-user-progress-not-found": "Không tìm thấy tiến độ người dùng",
     "error-user-exercise-attempt-not-found": "Không tìm thấy lần làm bài của người dùng",
     "error-user-vocabulary-stat-not-found": "Không tìm thấy thống kê từ vựng người dùng",
+    "error-vocab-speaking-content-not-found": "Không tìm thấy nội dung speaking cố định cho từ vựng",
+    "error-user-speaking-attempt-not-found": "Không tìm thấy lần nói của người dùng",
     "error-user-skill-stat-not-found": "Không tìm thấy thống kê kỹ năng người dùng",
     "error-user-daily-activity-not-found": "Không tìm thấy hoạt động hàng ngày của người dùng",
     "error-user-streak-not-found": "Không tìm thấy chuỗi ngày học của người dùng",

@@ -77,6 +77,8 @@ export type ErrorCode =
     | "error-user-progress-not-found"
     | "error-user-exercise-attempt-not-found"
     | "error-user-vocabulary-stat-not-found"
+    | "error-vocab-speaking-content-not-found"
+    | "error-user-speaking-attempt-not-found"
     | "error-user-skill-stat-not-found"
     | "error-user-daily-activity-not-found"
     | "error-user-streak-not-found"

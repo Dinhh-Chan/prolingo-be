@@ -129,6 +129,10 @@ export interface Configuration {
     openai?: {
         apiKey: string;
     };
+    /** API ngoài (aivocabio) — chấm phát âm */
+    vocabio: {
+        pronunciationAssessmentUrl: string;
+    };
 }
 
 export default (): Configuration => {
@@ -280,6 +284,13 @@ export default (): Configuration => {
     const openai =
         openaiApiKey !== "" ? { openai: { apiKey: openaiApiKey } } : {};
 
+    const vocabio: Configuration["vocabio"] = {
+        pronunciationAssessmentUrl: getEnv(
+            "VOCABIO_PRONUNCIATION_ASSESSMENT_URL",
+            "https://aivocabio.iuptit.com/api/v1/generate/pronunciation-assessment",
+        ),
+    };
+
     return {
         server,
         microservice,
@@ -294,6 +305,7 @@ export default (): Configuration => {
         smtp,
         sentry,
         minio,
+        vocabio,
         ...openai,
     };
 };

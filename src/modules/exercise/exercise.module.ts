@@ -12,6 +12,10 @@ import { ExerciseTypeModule } from "../exercise-type/exercise-type.module";
 import { VocabularyModule } from "../vocabulary/vocabulary.module";
 import { LessonVocabularyModule } from "../lesson-vocabulary/lesson-vocabulary.module";
 import { LessonExerciseModule } from "../lesson-exercise/lesson-exercise.module";
+import { UserSpeakingAttemptModule } from "../user-speaking-attempt/user-speaking-attempt.module";
+import { UserVocabularyProgressModule } from "../user-vocabulary-progress/user-vocabulary-progress.module";
+import { PronunciationAssessmentClient } from "./services/pronunciation-assessment.client";
+import { ExerciseSpeakingService } from "./services/exercise-speaking.service";
 
 @Module({
     imports: [
@@ -20,11 +24,15 @@ import { LessonExerciseModule } from "../lesson-exercise/lesson-exercise.module"
         VocabularyModule,
         LessonVocabularyModule,
         LessonExerciseModule,
+        UserSpeakingAttemptModule,
+        UserVocabularyProgressModule,
     ],
     controllers: [ExerciseController, ExerciseGenerationController],
     providers: [
         ExerciseService,
         ExerciseGenerationService,
+        PronunciationAssessmentClient,
+        ExerciseSpeakingService,
         RepositoryProvider(Entity.EXERCISE, ExerciseRepositorySql),
     ],
     exports: [ExerciseService],

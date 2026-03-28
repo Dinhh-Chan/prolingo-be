@@ -1,14 +1,24 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { LessonVocabularyService } from "@module/lesson-vocabulary/services/lesson-vocabulary.service";
 import { User } from "@module/user/entities/user.entity";
 import { LessonExerciseService } from "@module/lesson-exercise/services/lesson-exercise.service";
 import { ExerciseTypeService } from "@module/exercise-type/services/exercise-type.service";
 import { ExerciseService } from "./exercise.service";
 import { GenerateExercisesForLessonDto } from "../dto/generate-exercises-for-lesson.dto";
+import { GenerateSpeakingForLessonDto } from "../dto/generate-speaking-for-lesson.dto";
 
 function escapeRegExp(input: string): string {
     // Escape để dùng an toàn trong RegExp
     return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Ví dụ `speaking_lv1` → 1 */
+export function speakingLevelFromExerciseTypeCode(code: string): number {
+    const m = /^speaking_lv(\d+)$/i.exec(String(code || "").trim());
+    if (!m) return 1;
+    const n = parseInt(m[1], 10);
+    if (!Number.isFinite(n)) return 1;
+    return Math.min(4, Math.max(1, n));
 }
 
 @Injectable()
@@ -144,6 +154,112 @@ export class ExerciseGenerationService {
         return {
             created_exercise_ids: created.filter(Boolean),
             selected_vocab_ids: selectedVocabIds,
+        };
+    }
+
+    /**
+     * Sinh bài speaking (mỗi từ trong lesson = 1 exercise), gắn lesson_exercises.
+     * Cần seed `exercise_types` với code dạng `speaking_lv1`, `speaking_lv2`, …
+     */
+    async generateSpeakingForLesson(
+        user: User,
+        dto: GenerateSpeakingForLessonDto,
+    ): Promise<{
+        exercises: Array<{
+            exercise_id: string;
+            vocab_id: string;
+            word: string;
+        }>;
+        exercise_type_code: string;
+        speaking_level: number;
+    }> {
+        const lessonId = dto.lesson_id;
+        const code = dto.exercise_type?.code?.trim();
+        if (!code) {
+            throw new BadRequestException("exercise_type.code is required");
+        }
+
+        const exerciseType = await this.exerciseTypeService.getOne(
+            user,
+            { code } as any,
+            { enableDataPartition: false } as any,
+        );
+        if (!exerciseType?._id) {
+            throw new BadRequestException(
+                `Missing exercise_types row for code="${code}"`,
+            );
+        }
+
+        const speakingLevel = speakingLevelFromExerciseTypeCode(code);
+
+        const lessonVocabItems: any[] =
+            await this.lessonVocabularyService.getMany(
+                user,
+                { lesson_id: lessonId } as any,
+                {
+                    sort: { order_index: 1 },
+                    enableDataPartition: false,
+                } as any,
+            );
+
+        const existingLinks = await this.lessonExerciseService.getMany(
+            user,
+            { lesson_id: lessonId } as any,
+            { enableDataPartition: false } as any,
+        );
+        let orderBase = 0;
+        for (const le of existingLinks) {
+            orderBase = Math.max(orderBase, (le as any).order_index ?? 0);
+        }
+
+        const exercisesOut: Array<{
+            exercise_id: string;
+            vocab_id: string;
+            word: string;
+        }> = [];
+
+        let i = 0;
+        for (const item of lessonVocabItems) {
+            const word = item?.vocabulary?.word;
+            const vocabId = item?.vocab_id;
+            if (!word || !vocabId) continue;
+
+            const ex = await this.exerciseService.createSpeakingExercise(
+                user,
+                lessonId,
+                {
+                    type_id: exerciseType._id,
+                    typeCode: code,
+                    speaking_level: speakingLevel,
+                    vocab_id: String(vocabId),
+                    word: String(word),
+                    phonetic: item?.vocabulary?.phonetic,
+                },
+            );
+
+            await this.lessonExerciseService.create(
+                user,
+                {
+                    lesson_id: lessonId,
+                    exercise_id: ex._id,
+                    order_index: orderBase + i + 1,
+                    is_required: true,
+                } as any,
+                { enableDataPartition: false } as any,
+            );
+
+            exercisesOut.push({
+                exercise_id: ex._id,
+                vocab_id: String(vocabId),
+                word: String(word),
+            });
+            i += 1;
+        }
+
+        return {
+            exercises: exercisesOut,
+            exercise_type_code: code,
+            speaking_level: speakingLevel,
         };
     }
 

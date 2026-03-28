@@ -37,6 +37,8 @@ import { UserDailyActivityModule } from "./modules/user-daily-activity/user-dail
 import { UsersModule } from "./modules/users/users.module";
 import { SurveyModule } from "./modules/survey/survey.module";
 import { RoadmapModule } from "./modules/roadmap/roadmap.module";
+import { VocabSpeakingContentModule } from "./modules/vocab-speaking-content/vocab-speaking-content.module";
+import { UserSpeakingAttemptModule } from "./modules/user-speaking-attempt/user-speaking-attempt.module";
 
 @Module({
     imports: [
@@ -78,6 +80,8 @@ import { RoadmapModule } from "./modules/roadmap/roadmap.module";
         UsersModule,
         SurveyModule,
         RoadmapModule,
+        VocabSpeakingContentModule,
+        UserSpeakingAttemptModule,
     ],
     providers: [...DefaultProviders],
     controllers: [AppController],

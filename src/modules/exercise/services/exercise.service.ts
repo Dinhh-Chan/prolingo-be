@@ -87,6 +87,20 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
             return { ...content, questions };
         }
 
+        if (
+            typeof type === "string" &&
+            type.startsWith("speaking_") &&
+            content?.skill === "speaking"
+        ) {
+            const tasks = Array.isArray(content.tasks)
+                ? content.tasks.map((x: any) => ({
+                      ...x,
+                      question_type: x?.question_type || "speaking",
+                  }))
+                : [];
+            return { ...content, tasks };
+        }
+
         return content;
     }
 
@@ -287,6 +301,51 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
             type: "pronunciation",
             type_id,
             lesson_id: lessonId,
+            content,
+        } as Partial<Exercise>);
+
+        return exercise;
+    }
+
+    /**
+     * Bài speaking (phát âm / đọc theo reference) — một exercise gắn một vocab.
+     * `typeCode` ví dụ speaking_lv1 (phải có trong exercise_types).
+     */
+    async createSpeakingExercise(
+        user: User,
+        lessonId: string,
+        params: {
+            type_id: string;
+            typeCode: string;
+            speaking_level: number;
+            vocab_id: string;
+            word: string;
+            phonetic?: string;
+        },
+    ): Promise<Exercise> {
+        const content = {
+            schema_version: 1,
+            skill: "speaking",
+            speaking_level: params.speaking_level,
+            mode: "word",
+            tasks: [
+                {
+                    task_id: "1",
+                    question_type: "speaking",
+                    reference_text: params.word,
+                    vocab_id: params.vocab_id,
+                    phonetic: params.phonetic || "",
+                },
+            ],
+        };
+
+        const exercise = await super.create(user, {
+            type: params.typeCode,
+            type_id: params.type_id,
+            lesson_id: lessonId,
+            vocab_id: params.vocab_id,
+            title: `Speaking: ${params.word}`,
+            skill_category: "speaking",
             content,
         } as Partial<Exercise>);
 

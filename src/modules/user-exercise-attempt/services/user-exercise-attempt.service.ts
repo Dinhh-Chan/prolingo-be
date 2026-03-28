@@ -96,6 +96,11 @@ export class UserExerciseAttemptService extends BaseService<
             return [...vocabIds];
         }
 
+        if (typeof type === "string" && type.startsWith("speaking_")) {
+            const vid = exercise?.vocab_id;
+            return vid ? [String(vid)] : [];
+        }
+
         if (type === "pronunciation") {
             if (!lessonId) return [];
 

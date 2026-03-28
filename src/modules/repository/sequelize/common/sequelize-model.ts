@@ -14,6 +14,8 @@ import { SettingModel } from "../model/setting.model";
 import TopicModel from "../model/topic.model";
 import { UserTopicModel } from "../model/user-topic.model";
 import { UserModel } from "../model/user.model";
+import { UserSpeakingAttemptModel } from "@module/user-speaking-attempt/models/user-speaking-attempt.model";
+import { VocabSpeakingContentModel } from "@module/vocab-speaking-content/models/vocab-speaking-content.model";
 
 export const SequelizeModel: ModelCtor<Model>[] = [
     UserModel,
@@ -31,4 +33,6 @@ export const SequelizeModel: ModelCtor<Model>[] = [
     AuditLogModel,
     DataPartitionModel,
     DataPartitionUserModel,
+    VocabSpeakingContentModel,
+    UserSpeakingAttemptModel,
 ];
