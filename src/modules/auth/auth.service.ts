@@ -138,15 +138,15 @@ export class AuthService extends BaseService<Auth, AuthRepository> {
         );
         return this.getLoginInfo(accessToken, refreshToken);
     }
-
+    // sửa luồng :user tồn tại -> vào trang nhập mật khẩu , user không tồn tại -> gửi otp
     async sendOtp(dto: SendOtpDto): Promise<{ expiresIn: number }> {
         const email = dto.email.toLowerCase().trim();
         const user = await this.userRepository.getOne(
             { email },
             { enableDataPartition: false },
         );
-        if (!user) {
-            throw ApiError.NotFound("error-user-not-found");
+        if (user) {
+            throw ApiError.NotFound("error-user-exist");
         }
         const otp = await this.otpService.setOtp(dto.type, email);
         await this.emailService.sendOtpEmail(email, otp, dto.type);
