@@ -223,6 +223,11 @@ export class ExerciseGenerationService {
             const word = item?.vocabulary?.word;
             const vocabId = item?.vocab_id;
             if (!word || !vocabId) continue;
+            const exampleSentence = String(item?.sentence_en || "").trim();
+            const referenceTextForLevel =
+                speakingLevel === 2 && exampleSentence
+                    ? exampleSentence
+                    : String(word);
 
             const ex = await this.exerciseService.createSpeakingExercise(
                 user,
@@ -233,6 +238,7 @@ export class ExerciseGenerationService {
                     speaking_level: speakingLevel,
                     vocab_id: String(vocabId),
                     word: String(word),
+                    reference_text: referenceTextForLevel,
                     phonetic: item?.vocabulary?.phonetic,
                 },
             );

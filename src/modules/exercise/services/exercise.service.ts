@@ -320,19 +320,26 @@ export class ExerciseService extends BaseService<Exercise, ExerciseRepository> {
             speaking_level: number;
             vocab_id: string;
             word: string;
+            reference_text?: string;
             phonetic?: string;
         },
     ): Promise<Exercise> {
+        const referenceText = (
+            params.reference_text ||
+            params.word ||
+            ""
+        ).trim();
+        const mode = params.speaking_level === 2 ? "example_sentence" : "word";
         const content = {
             schema_version: 1,
             skill: "speaking",
             speaking_level: params.speaking_level,
-            mode: "word",
+            mode,
             tasks: [
                 {
                     task_id: "1",
                     question_type: "speaking",
-                    reference_text: params.word,
+                    reference_text: referenceText,
                     vocab_id: params.vocab_id,
                     phonetic: params.phonetic || "",
                 },
