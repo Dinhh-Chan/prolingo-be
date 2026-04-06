@@ -149,7 +149,7 @@ export class ExerciseGenerationController {
     @ApiOperation({
         summary: "Nộp audio chấm phát âm (aivocabio) và cập nhật tiến độ từ",
         description:
-            "Gọi VOCABIO_PRONUNCIATION_ASSESSMENT_URL. Điểm >= 75: ghi user_speaking_attempts + recordFlashcardSwipe(REMEMBERED).",
+            "Chấp nhận nhiều định dạng (m4a, wav, webm, aac, mp4 audio, …); server chuyển sang MP3 trước khi gọi aivocabio. Trực tiếp .mp3 / .ogg / .oga không cần chuyển. Điểm >= 75: ghi user_speaking_attempts + recordFlashcardSwipe(REMEMBERED).",
     })
     async submitSpeakingPronunciation(
         @ReqUser() user: User,

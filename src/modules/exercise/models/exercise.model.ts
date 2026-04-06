@@ -18,7 +18,14 @@ import { VocabularyModel } from "../../vocabulary/models/vocabulary.model";
 })
 export class ExerciseModel extends Model implements Exercise {
     type: string;
+
+    @Column({
+        type: DataType.STRING(64),
+        allowNull: true,
+        field: "lesson_id",
+    })
     lesson_id?: string;
+
     @StrObjectId()
     @Column({
         type: DataType.STRING(64),

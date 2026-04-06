@@ -8,6 +8,11 @@ import {
     FlashcardSwipeDto,
     FlashcardSwipeOutcome,
 } from "@module/user-vocabulary-progress/dto/flashcard-swipe.dto";
+import * as path from "path";
+import {
+    needsTranscodeToMp3ForUpstream,
+    transcodeAudioBufferToMp3,
+} from "../utils/audio-transcode-for-assessment.util";
 import { PronunciationAssessmentClient } from "./pronunciation-assessment.client";
 
 /** Điểm API trả về 0–100 */
@@ -53,10 +58,39 @@ export class ExerciseSpeakingService {
         const referenceText = (dto.reference_text?.trim() || vocab.word).trim();
         const speakingLevel = dto.speaking_level ?? 1;
 
+        let uploadBuffer = file.buffer;
+        let uploadName = file.originalname || "audio.bin";
+        let uploadMime = file.mimetype || "application/octet-stream";
+
+        if (needsTranscodeToMp3ForUpstream(uploadName)) {
+            try {
+                uploadBuffer = await transcodeAudioBufferToMp3(
+                    uploadBuffer,
+                    file.originalname || "audio.bin",
+                    file.mimetype,
+                );
+                uploadName = "pronunciation.mp3";
+                uploadMime = "audio/mpeg";
+            } catch (e: unknown) {
+                const msg =
+                    e instanceof Error
+                        ? e.message
+                        : "Không chuyển đổi được file âm thanh";
+                throw new BadRequestException(
+                    `Không xử lý được định dạng audio (cần ffmpeg). Chi tiết: ${msg}`,
+                );
+            }
+        } else {
+            const ext = path.extname(uploadName).toLowerCase();
+            const base =
+                path.basename(uploadName, path.extname(uploadName)) || "audio";
+            uploadName = `${base}${ext}`;
+        }
+
         const { raw, data } = await this.pronunciationClient.assess(
-            file.buffer,
-            file.originalname,
-            file.mimetype,
+            uploadBuffer,
+            uploadName,
+            uploadMime,
             referenceText,
         );
 
