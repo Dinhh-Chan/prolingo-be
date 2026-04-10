@@ -67,6 +67,19 @@ export class OtpService {
         return isValid;
     }
 
+    async checkOtp(
+        type: OtpType,
+        email: string,
+        otp: string,
+    ): Promise<boolean> {
+        const key = this.getKey(type, email);
+        const stored = await this.redis.get(key);
+        if (!stored) {
+            return false;
+        }
+        return stored === otp;
+    }
+
     async deleteOtp(type: OtpType, email: string): Promise<void> {
         const key = this.getKey(type, email);
         await this.redis.del(key);

@@ -43,6 +43,7 @@ import { GoogleLoginDto } from "./dto/google-login.dto";
 import { ResetPasswordOtpDto } from "./dto/reset-password-otp.dto";
 import { SendOtpDto } from "./dto/send-otp.dto";
 import { VerifyOtpLoginDto } from "./dto/verify-otp-login.dto";
+import { VerifyOtpDto } from "./dto/verify-otp.dto";
 import { LoginRequestDto } from "./dto/login-request.dto";
 import { LoginResponseDto } from "./dto/login-response.dto";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
@@ -184,6 +185,16 @@ export class AuthService extends BaseService<Auth, AuthRepository> {
             auth,
         );
         return this.getLoginInfo(accessToken, refreshToken);
+    }
+
+    async verifyOtp(dto: VerifyOtpDto): Promise<{ isValid: boolean }> {
+        const email = dto.email.toLowerCase().trim();
+        const isValid = await this.otpService.checkOtp(
+            dto.type,
+            email,
+            dto.otp,
+        );
+        return { isValid };
     }
 
     async resetPasswordWithOtp(
@@ -460,7 +471,7 @@ export class AuthService extends BaseService<Auth, AuthRepository> {
             );
             return payload;
         } catch (err) {
-            console.error(err.message);
+            console.error(err instanceof Error ? err.message : err);
             throw ApiError.Unauthorized("error-unauthorized");
         }
     }
