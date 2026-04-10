@@ -12,6 +12,7 @@ import { RefreshTokenDto } from "./dto/refresh-token.dto";
 import { ResetPasswordOtpDto } from "./dto/reset-password-otp.dto";
 import { SendOtpDto } from "./dto/send-otp.dto";
 import { VerifyOtpLoginDto } from "./dto/verify-otp-login.dto";
+import { VerifyOtpDto } from "./dto/verify-otp.dto";
 import { Auth } from "./entities/auth.entity";
 import { RegisterRequestDto } from "./dto/register-request.dto";
 
@@ -79,6 +80,15 @@ export class AuthPublicController {
     })
     async loginOtp(@Req() req: Request, @Body() dto: VerifyOtpLoginDto) {
         return this.authService.loginWithOtp(req, dto);
+    }
+
+    @Post("otp/verify")
+    @ApiOperation({
+        summary: "Kiểm tra OTP",
+        description: "Kiểm tra mã OTP có đúng và còn hiệu lực hay không.",
+    })
+    async verifyOtp(@Body() dto: VerifyOtpDto) {
+        return this.authService.verifyOtp(dto);
     }
 
     @ApiRecordResponse(LoginResponseDto)
